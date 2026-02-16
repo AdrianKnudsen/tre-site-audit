@@ -1,0 +1,14 @@
+{
+  "name": "tre-site-audit",
+  "version": "1.0.0",
+  "description": "TRE Bergen Website Audit Tool — Full-stack webapp for comprehensive website audits",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "express": "^4.21.0"
+  }
+}

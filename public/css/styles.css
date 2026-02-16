@@ -1,0 +1,398 @@
+/* =====================================================================
+   TRE BERGEN - NETTSTEDSREVISJON STYLES
+   Stilark for nettstedsrevisjonsapplikasjon
+   ===================================================================== */
+
+/* =====================================================================
+   CSS VARIABLER (Design tokens)
+   Globale farger og typografi som brukes i hele applikasjonen
+   ===================================================================== */
+:root {
+  /* Primærfarger - Lime/grønn brand color */
+  --color-lime: #d2f78f;
+  --color-lime-light: #e5fabb;
+  --color-lime-dark: #b8e060;
+  --color-lime-deep: #8ac926;
+
+  /* Basisfarger */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-peach: #ffbe8a;
+
+  /* Gråtoner - for bakgrunner og tekst */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #d4d4d4;
+  --color-gray-600: #525252;
+  --color-gray-800: #262626;
+
+  /* Typografi */
+  --font: "Jost", "Century Gothic", "CenturyGothic", "AppleGothic", sans-serif;
+}
+
+/* =====================================================================
+   GLOBAL RESET & BASE STYLES
+   Nullstiller default nettleserstiler og setter grunnleggende styling
+   ===================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--color-gray-50);
+  color: var(--color-black);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =====================================================================
+   LANDING PAGE
+   Hovedsiden hvor brukeren fyller inn URL og API-nøkkel
+   ===================================================================== */
+.landing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.landing.hidden {
+  display: none;
+}
+
+/* Logo og hovedoverskrift */
+.logo-text {
+  font-family: var(--font);
+  font-size: 2rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.landing h1 {
+  font-family: var(--font);
+  font-size: 3rem;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.landing .subtitle {
+  font-size: 1.1rem;
+  color: var(--color-gray-600);
+  margin-bottom: 2.5rem;
+  text-align: center;
+  max-width: 500px;
+}
+
+/* =====================================================================
+   SKJEMA-KOMPONENTENE
+   Input-felt, labels og submit-knapp
+   ===================================================================== */
+.form-card {
+  background: var(--color-white);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid var(--color-gray-200);
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+  color: var(--color-gray-800);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-gray-200);
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--color-lime-deep);
+}
+
+/* Hjelpetekst under input-felt */
+.form-group .hint {
+  font-size: 0.8rem;
+  color: var(--color-gray-600);
+  margin-top: 0.3rem;
+}
+
+/* Submit-knapp */
+.btn-audit {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--color-lime);
+  color: var(--color-black);
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.1s;
+  margin-top: 0.5rem;
+}
+
+.btn-audit:hover {
+  background: var(--color-lime-dark);
+}
+
+.btn-audit:active {
+  transform: scale(0.98);
+}
+
+.btn-audit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =====================================================================
+   LOADING STATE
+   Vises mens revisjonen pågår med progresjonsindikatorer
+   ===================================================================== */
+.loading-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading-view.hidden {
+  display: none;
+}
+
+.loading-card {
+  background: var(--color-white);
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+  border: 1px solid var(--color-gray-200);
+}
+
+.loading-card h2 {
+  font-family: var(--font);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+/* Progresjonslinje */
+.progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--color-gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-lime-deep);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+/* Stegindikator med ikoner og tekst */
+.progress-steps {
+  text-align: left;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  color: var(--color-gray-300);
+  transition: color 0.3s;
+}
+
+/* Aktivt steg */
+.progress-step.active {
+  color: var(--color-black);
+  font-weight: 600;
+}
+
+/* Fullførte steg */
+.progress-step.done {
+  color: var(--color-lime-deep);
+}
+
+/* Steg-ikon (nummer eller checkmark) */
+.step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--color-gray-200);
+  color: var(--color-gray-600);
+}
+
+.progress-step.active .step-icon {
+  background: var(--color-lime);
+  color: var(--color-black);
+}
+
+.progress-step.done .step-icon {
+  background: var(--color-lime-deep);
+  color: var(--color-white);
+}
+
+/* Pulserende animasjon for aktivt steg */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.progress-step.active .step-icon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* =====================================================================
+   ERROR STATE
+   Viser feilmeldinger til brukeren
+   ===================================================================== */
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  color: #dc2626;
+  font-size: 0.9rem;
+  display: none;
+}
+
+.error-banner.visible {
+  display: block;
+}
+
+/* =====================================================================
+   REPORT VIEW
+   Viser den genererte revisjonsrapporten i en iframe
+   ===================================================================== */
+.report-view {
+  width: 100%;
+}
+
+.report-view.hidden {
+  display: none;
+}
+
+/* Handlingsknapper over rapporten */
+.report-actions {
+  background: var(--color-lime);
+  padding: 1rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.report-actions .btn {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--color-black);
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.report-actions .btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.report-actions .btn-primary {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+.report-actions .btn-primary:hover {
+  background: var(--color-gray-800);
+}
+
+/* Iframe som viser rapporten */
+.report-frame {
+  width: 100%;
+  border: none;
+  min-height: 100vh;
+}
+
+/* =====================================================================
+   FOOTER
+   Bunntekst med logo og nettadresse
+   ===================================================================== */
+.site-footer {
+  background: var(--color-black);
+  color: var(--color-white);
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.site-footer .footer-logo {
+  font-family: var(--font);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.site-footer a {
+  color: var(--color-lime);
+  text-decoration: none;
+}

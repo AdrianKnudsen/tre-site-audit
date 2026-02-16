@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Audit Report — {{URL}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Tre Bergen Brand Styling ===== */
+    /* Jost — geometric sans-serif, closest universal match to Brockmann */
+
+    :root {
+      --color-lime: #d2f78f;
+      --color-lime-light: #e5fabb;
+      --color-lime-dark: #b8e060;
+      --color-lime-deep: #8ac926;
+      --color-black: #000000;
+      --color-white: #ffffff;
+      --color-peach: #FFBE8A;
+      --color-peach-dark: #e5a06a;
+      --color-rose: #bb6d6d;
+      --color-gray-50: #fafafa;
+      --color-gray-100: #f5f5f5;
+      --color-gray-200: #e5e5e5;
+      --color-gray-300: #d4d4d4;
+      --color-gray-600: #525252;
+      --color-gray-800: #262626;
+      --color-pass: #16a34a;
+      --color-warn: #ca8a04;
+      --color-fail: #dc2626;
+      --color-na: #9ca3af;
+      --font-heading: 'Jost', 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+      --font-body: 'Jost', 'Century Gothic', 'CenturyGothic', 'AppleGothic', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--color-black);
+      background: var(--color-gray-50);
+    }
+
+    /* ===== Header ===== */
+    .report-header {
+      background: var(--color-lime);
+      padding: 3rem 2.5rem 2.5rem;
+      position: relative;
+    }
+
+    .report-header .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+
+    .report-header .logo-img {
+      height: 48px;
+      width: auto;
+    }
+
+    .report-header .logo-text {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .lang-toggle {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      background: rgba(0,0,0,0.08);
+      border-radius: 24px;
+      padding: 0.3rem;
+    }
+
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: none;
+      background: transparent;
+      padding: 0.4rem 0.85rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--color-black);
+      transition: background 0.2s;
+    }
+
+    .lang-btn.active {
+      background: var(--color-white);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .lang-btn:hover:not(.active) {
+      background: rgba(255,255,255,0.4);
+    }
+
+    .lang-btn .flag {
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .report-header h1 {
+      font-family: var(--font-heading);
+      font-size: 2.8rem;
+      font-weight: 500;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+
+    .report-header .meta {
+      font-size: 1rem;
+      color: var(--color-gray-800);
+    }
+
+    .report-header .meta a {
+      color: var(--color-black);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ===== Container ===== */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 2.5rem;
+    }
+
+    /* ===== Section ===== */
+    section {
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+
+    section:last-child {
+      border-bottom: none;
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: 1.85rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 3px solid var(--color-lime);
+      display: inline-block;
+    }
+
+    h3 {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 500;
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    /* ===== Domain Score Summary Cards ===== */
+    .domain-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .domain-card {
+      background: var(--color-peach);
+      color: var(--color-black);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .domain-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--color-lime);
+    }
+
+    .domain-card .domain-name {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-black);
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .domain-card .ring-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0.5rem auto;
+    }
+
+    .domain-ring-svg {
+      width: 100px;
+      height: 100px;
+      transform: rotate(-90deg);
+    }
+
+    .domain-ring-bg {
+      fill: none;
+      stroke: rgba(0,0,0,0.1);
+      stroke-width: 8;
+    }
+
+    .domain-ring-fill {
+      fill: none;
+      stroke: var(--color-lime);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-out;
+    }
+
+    .domain-card .domain-score {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--color-black);
+      line-height: 1;
+    }
+
+    .domain-card .domain-counts {
+      font-size: 0.85rem;
+      color: var(--color-gray-800);
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .domain-card .count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      transition: background 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .domain-card .count-badge:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    .count-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .count-dot.pass { background: var(--color-pass); }
+    .count-dot.warn { background: var(--color-warn); }
+    .count-dot.fail { background: var(--color-fail); }
+
+    /* ===== Speedometer Gauges (Lighthouse) ===== */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .gauge-card {
+      background: var(--color-white);
+      border-radius: 16px;
+      padding: 1.5rem 1rem 1.25rem;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: 1px solid var(--color-gray-200);
+    }
+
+    .gauge-card .label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-gray-600);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .gauge-svg {
+      width: 160px;
+      height: 100px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--color-gray-200);
+      stroke-width: 14;
+      stroke-linecap: round;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-out;
+      /* Default stroke — overridden by JS gradient per score */
+    }
+
+    .gauge-fill.good { stroke: var(--color-pass); }
+    .gauge-fill.needs-improvement { stroke: var(--color-warn); }
+    .gauge-fill.poor { stroke: var(--color-fail); }
+
+    .gauge-needle {
+      fill: var(--color-black);
+      transform-origin: 80px 85px;
+      transition: transform 1s ease-out;
+    }
+
+    .gauge-center-dot {
+      fill: var(--color-black);
+    }
+
+    .gauge-value {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 700;
+      fill: var(--color-black);
+      text-anchor: middle;
+      dominant-baseline: auto;
+    }
+
+    .gauge-card .rating {
+      font-size: 0.8rem;
+      margin-top: 0.35rem;
+      color: var(--color-gray-600);
+      font-weight: 600;
+    }
+
+    .gauge-tick-label {
+      font-size: 8px;
+      fill: var(--color-gray-600);
+      text-anchor: middle;
+    }
+
+    /* ===== Device Toggle (Desktop / Mobile) ===== */
+    .device-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-radius: 24px;
+      overflow: hidden;
+      display: inline-flex;
+      border: 2px solid var(--color-lime);
+    }
+
+    .device-btn {
+      border: none;
+      background: transparent;
+      padding: 0.5rem 1.5rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-gray-600);
+      transition: all 0.2s;
+    }
+
+    .device-btn.active {
+      background: var(--color-lime);
+      color: var(--color-black);
+    }
+
+    .device-btn:hover:not(.active) {
+      background: var(--color-lime-light);
+    }
+
+    .device-section { display: none; }
+    .device-section.active { display: block; }
+
+    /* ===== Bar Chart for Metrics ===== */
+    .metric-bar-chart {
+      margin: 1.5rem 0;
+    }
+
+    .metric-bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      gap: 1rem;
+    }
+
+    .metric-bar-label {
+      min-width: 220px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .metric-bar-track {
+      flex: 1;
+      height: 28px;
+      background: var(--color-gray-200);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .metric-bar-fill {
+      height: 100%;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-white);
+      min-width: 60px;
+      transition: width 0.6s ease;
+    }
+
+    .metric-bar-fill.good { background: var(--color-lime-deep); color: var(--color-black); }
+    .metric-bar-fill.needs-improvement { background: var(--color-warn); }
+    .metric-bar-fill.poor { background: var(--color-fail); }
+
+    /* ===== Stacked Bar (Pass/Warn/Fail visual) ===== */
+    .stacked-bar-container {
+      margin: 1.5rem 0;
+    }
+
+    .stacked-bar-row-label {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .stacked-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+
+    .stacked-bar .bar-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-white);
+      min-width: 30px;
+    }
+
+    .stacked-bar .bar-pass { background: var(--color-pass); }
+    .stacked-bar .bar-warn { background: var(--color-warn); }
+    .stacked-bar .bar-fail { background: var(--color-fail); }
+    .stacked-bar .bar-na   { background: var(--color-gray-300); }
+
+    .stacked-bar-legend {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--color-gray-600);
+      margin-top: 0.5rem;
+    }
+
+    .stacked-bar-legend span {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* ===== Tables ===== */
+    .metrics-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .metrics-table th,
+    .metrics-table td {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--color-gray-200);
+    }
+
+    .metrics-table th {
+      font-family: var(--font-heading);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--color-peach);
+      color: var(--color-black);
+    }
+
+    .findings-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    .findings-table th,
+    .findings-table td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--color-gray-200);
+      vertical-align: top;
+    }
+
+    .findings-table th {
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--color-peach);
+      color: var(--color-black);
+    }
+
+    .findings-table td { font-size: 0.95rem; }
+
+    .findings-table .check-name {
+      font-weight: 700;
+      min-width: 180px;
+    }
+
+    .findings-table .notes {
+      color: var(--color-gray-600);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* ===== Status Badges ===== */
+    .status {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .status.pass { background: var(--color-pass); color: var(--color-white); }
+    .status.warn { background: var(--color-warn); color: var(--color-white); }
+    .status.fail { background: var(--color-fail); color: var(--color-white); }
+    .status.na   { background: var(--color-gray-300); color: var(--color-white); }
+
+    /* ===== Expandable Detail Rows ===== */
+    .finding-row {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .finding-row:hover {
+      background: var(--color-gray-100);
+    }
+
+    .finding-row .expand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      font-size: 0.75rem;
+      background: var(--color-lime);
+      color: var(--color-black);
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      transition: transform 0.2s;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
+    /* Use CSS-generated arrow to avoid HTML entity rendering issues */
+    .finding-row .expand-icon::after {
+      content: '';
+      display: block;
+      width: 0; height: 0;
+      border-left: 5px solid var(--color-black);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      margin-left: 2px;
+    }
+
+    .finding-row.expanded .expand-icon {
+      transform: rotate(90deg);
+    }
+
+    .finding-detail {
+      display: none;
+      background: var(--color-gray-100);
+      border-left: 4px solid var(--color-lime);
+    }
+
+    .finding-detail.visible {
+      display: table-row;
+    }
+
+    .finding-detail td {
+      padding: 1rem 1rem 1rem 2rem;
+      font-size: 0.93rem;
+      color: var(--color-gray-800);
+      line-height: 1.6;
+    }
+
+    .finding-detail .detail-label {
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 0.25rem;
+    }
+
+    .finding-detail .detail-recommendation {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: var(--color-lime-light);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    /* ===== Section headers with lime background ===== */
+    .section-header-lime {
+      background: var(--color-lime);
+      padding: 1rem 2.5rem;
+      margin: 0 -2.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+    }
+
+    .section-header-lime h2 {
+      border-bottom: none;
+      margin-bottom: 0;
+      display: block;
+    }
+
+    /* ===== Priority Fixes ===== */
+    .priority-list {
+      counter-reset: priority;
+      list-style: none;
+      padding: 0;
+    }
+
+    .priority-list li {
+      counter-increment: priority;
+      padding: 1.25rem 1rem 1.25rem 4rem;
+      border-bottom: 1px solid var(--color-gray-200);
+      position: relative;
+    }
+
+    .priority-list li::before {
+      content: counter(priority);
+      position: absolute;
+      left: 0; top: 1.25rem;
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-white);
+      background: var(--color-lime-deep);
+      width: 2.5rem; height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .priority-list .fix-title { font-weight: 700; margin-bottom: 0.25rem; }
+    .priority-list .fix-description { font-size: 0.95rem; color: var(--color-gray-600); }
+    .priority-list .fix-severity { margin-top: 0.4rem; }
+
+    /* ===== Footer ===== */
+    .report-footer {
+      background: var(--color-black);
+      color: var(--color-white);
+      padding: 2rem 2.5rem;
+      margin-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .report-footer .footer-logo-img {
+      height: 36px;
+      width: auto;
+      filter: brightness(0) invert(1);
+    }
+
+    .report-footer .footer-logo-text {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .report-footer .footer-text {
+      font-size: 0.9rem;
+      color: var(--color-gray-300);
+    }
+
+    /* ===== Print Styles ===== */
+    @media print {
+      body { font-size: 11pt; background: white; }
+      .report-header { padding: 2rem 1.5rem; }
+      .container { padding: 0 1.5rem; }
+      section { break-inside: avoid; }
+      .findings-table { font-size: 9pt; }
+      .gauge-svg { width: 120px; height: 75px; }
+      .gauge-value { font-size: 1.5rem; }
+      .lang-toggle { display: none; }
+      .finding-detail { display: table-row !important; }
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--color-gray-100); }
+    ::-webkit-scrollbar-thumb { background: var(--color-lime-dark); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <div class="report-header">
+    <div class="header-top">
+      <div>
+        <!-- TRE Bergen Logo: Replace src with actual logo URL, or use text fallback -->
+        <!-- <img class="logo-img" src="TRE_LOGO_URL" alt="TRE Bergen"> -->
+        <div class="logo-text">TRE BERGEN</div>
+      </div>
+      <div class="lang-toggle">
+        <button class="lang-btn active" data-lang="no" onclick="switchLang('no')">
+          <span class="flag">&#127475;&#127476;</span> NO
+        </button>
+        <button class="lang-btn" data-lang="en" onclick="switchLang('en')">
+          <span class="flag">&#127468;&#127463;</span> EN
+        </button>
+      </div>
+    </div>
+    <h1 data-no="Nettstedsrevisjon" data-en="Website Audit Report">Nettstedsrevisjon</h1>
+    <p class="meta">
+      <a href="{{URL}}">{{URL}}</a><br>
+      <span data-no="Revisjonsdato: {{DATE}}" data-en="Audit date: {{DATE}}">Revisjonsdato: {{DATE}}</span>
+    </p>
+  </div>
+
+  <div class="container">
+
+    <!-- ===== EXECUTIVE SUMMARY ===== -->
+    <section id="summary">
+      <h2 data-no="Sammendrag" data-en="Executive Summary">Sammendrag</h2>
+      <p>{{EXECUTIVE_SUMMARY_TEXT}}</p>
+
+      <!-- Domain score cards (peach bg, lime accent, dark text) -->
+      <div class="domain-summary">
+        <div class="domain-card">
+          <div class="domain-name">UX</div>
+          <div class="ring-container">
+            <svg class="domain-ring-svg" viewBox="0 0 100 100">
+              <circle class="domain-ring-bg" cx="50" cy="50" r="42" />
+              <!-- circumference = 2π×42 ≈ 263.9; dashoffset = 263.9 - (score/100 × 263.9) -->
+              <circle class="domain-ring-fill" cx="50" cy="50" r="42"
+                      stroke-dasharray="263.9" stroke-dashoffset="{{UX_RING_OFFSET}}" />
+            </svg>
+            <div class="domain-score">{{UX_SCORE}}%</div>
+          </div>
+          <div class="domain-counts">
+            <a class="count-badge" href="#ux"><span class="count-dot pass"></span> {{UX_PASS}} <span data-no="bestått" data-en="pass">bestått</span></a>
+            <a class="count-badge filter-link" href="#ux" data-filter="warn"><span class="count-dot warn"></span> {{UX_WARN}} <span data-no="advarsel" data-en="warn">advarsel</span></a>
+            <a class="count-badge filter-link" href="#ux" data-filter="fail"><span class="count-dot fail"></span> {{UX_FAIL}} <span data-no="feil" data-en="fail">feil</span></a>
+          </div>
+        </div>
+        <div class="domain-card">
+          <div class="domain-name">UI</div>
+          <div class="ring-container">
+            <svg class="domain-ring-svg" viewBox="0 0 100 100">
+              <circle class="domain-ring-bg" cx="50" cy="50" r="42" />
+              <circle class="domain-ring-fill" cx="50" cy="50" r="42"
+                      stroke-dasharray="263.9" stroke-dashoffset="{{UI_RING_OFFSET}}" />
+            </svg>
+            <div class="domain-score">{{UI_SCORE}}%</div>
+          </div>
+          <div class="domain-counts">
+            <a class="count-badge" href="#ui"><span class="count-dot pass"></span> {{UI_PASS}} <span data-no="bestått" data-en="pass">bestått</span></a>
+            <a class="count-badge filter-link" href="#ui" data-filter="warn"><span class="count-dot warn"></span> {{UI_WARN}} <span data-no="advarsel" data-en="warn">advarsel</span></a>
+            <a class="count-badge filter-link" href="#ui" data-filter="fail"><span class="count-dot fail"></span> {{UI_FAIL}} <span data-no="feil" data-en="fail">feil</span></a>
+          </div>
+        </div>
+        <div class="domain-card">
+          <div class="domain-name" data-no="Tilgjengelighet" data-en="Accessibility">Tilgjengelighet</div>
+          <div class="ring-container">
+            <svg class="domain-ring-svg" viewBox="0 0 100 100">
+              <circle class="domain-ring-bg" cx="50" cy="50" r="42" />
+              <circle class="domain-ring-fill" cx="50" cy="50" r="42"
+                      stroke-dasharray="263.9" stroke-dashoffset="{{A11Y_RING_OFFSET}}" />
+            </svg>
+            <div class="domain-score">{{A11Y_SCORE}}%</div>
+          </div>
+          <div class="domain-counts">
+            <a class="count-badge" href="#accessibility"><span class="count-dot pass"></span> {{A11Y_PASS}} <span data-no="bestått" data-en="pass">bestått</span></a>
+            <a class="count-badge filter-link" href="#accessibility" data-filter="warn"><span class="count-dot warn"></span> {{A11Y_WARN}} <span data-no="advarsel" data-en="warn">advarsel</span></a>
+            <a class="count-badge filter-link" href="#accessibility" data-filter="fail"><span class="count-dot fail"></span> {{A11Y_FAIL}} <span data-no="feil" data-en="fail">feil</span></a>
+          </div>
+        </div>
+        <div class="domain-card">
+          <div class="domain-name" data-no="Beste praksis" data-en="Best Practices">Beste praksis</div>
+          <div class="ring-container">
+            <svg class="domain-ring-svg" viewBox="0 0 100 100">
+              <circle class="domain-ring-bg" cx="50" cy="50" r="42" />
+              <circle class="domain-ring-fill" cx="50" cy="50" r="42"
+                      stroke-dasharray="263.9" stroke-dashoffset="{{BP_RING_OFFSET}}" />
+            </svg>
+            <div class="domain-score">{{BP_SCORE}}%</div>
+          </div>
+          <div class="domain-counts">
+            <a class="count-badge" href="#best-practices"><span class="count-dot pass"></span> {{BP_PASS}} <span data-no="bestått" data-en="pass">bestått</span></a>
+            <a class="count-badge filter-link" href="#best-practices" data-filter="warn"><span class="count-dot warn"></span> {{BP_WARN}} <span data-no="advarsel" data-en="warn">advarsel</span></a>
+            <a class="count-badge filter-link" href="#best-practices" data-filter="fail"><span class="count-dot fail"></span> {{BP_FAIL}} <span data-no="feil" data-en="fail">feil</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual: Stacked bar overview -->
+      <div class="stacked-bar-container">
+        <h3 data-no="Overordnet oversikt" data-en="Overall Overview">Overordnet oversikt</h3>
+        <!-- Generate one stacked bar per domain. Example:
+        <p class="stacked-bar-row-label">UX</p>
+        <div class="stacked-bar">
+          <div class="bar-segment bar-pass" style="width:{{UX_PASS_PCT}}%">{{UX_PASS}}</div>
+          <div class="bar-segment bar-warn" style="width:{{UX_WARN_PCT}}%">{{UX_WARN}}</div>
+          <div class="bar-segment bar-fail" style="width:{{UX_FAIL_PCT}}%">{{UX_FAIL}}</div>
+        </div>
+        Repeat for UI, Accessibility, Best Practices -->
+        <!-- {{STACKED_BARS}} -->
+        <div class="stacked-bar-legend">
+          <span><span class="legend-dot" style="background:var(--color-pass)"></span> <span data-no="Bestått" data-en="Pass">Bestått</span></span>
+          <span><span class="legend-dot" style="background:var(--color-warn)"></span> <span data-no="Advarsel" data-en="Warning">Advarsel</span></span>
+          <span><span class="legend-dot" style="background:var(--color-fail)"></span> <span data-no="Feil" data-en="Fail">Feil</span></span>
+          <span><span class="legend-dot" style="background:var(--color-gray-300)"></span> <span data-no="Ikke aktuelt" data-en="N/A">Ikke aktuelt</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LIGHTHOUSE RESULTS ===== -->
+    <section id="lighthouse">
+      <h2 data-no="Lighthouse-resultater" data-en="Lighthouse Results">Lighthouse-resultater</h2>
+
+      <!-- Device toggle: Desktop / Mobile -->
+      <div class="device-toggle">
+        <button class="device-btn active" data-device="desktop" onclick="switchDevice('desktop')">Desktop</button>
+        <button class="device-btn" data-device="mobile" onclick="switchDevice('mobile')">Mobil</button>
+      </div>
+
+      <!-- Speedometer gauges for Lighthouse scores.
+           For each gauge:
+           - Arc spans 180° (semicircle), from left (0) to right (100)
+           - Arc path: M 15 85 A 65 65 0 0 1 145 85  (center at 80,85, radius 65)
+           - Arc circumference (half circle) = π × 65 ≈ 204.2
+           - stroke-dasharray="204.2"
+           - stroke-dashoffset = 204.2 - (score/100 × 204.2)
+           - Needle rotation: -90deg + (score/100 × 180)deg
+           - Color class: good (90-100), needs-improvement (50-89), poor (0-49)
+      -->
+
+      <!-- ===== DESKTOP GAUGES ===== -->
+      <div class="device-section active" id="device-desktop">
+        <div class="score-grid">
+          <div class="gauge-card">
+            <div class="label" data-no="Ytelse" data-en="Performance">Ytelse</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{PERF_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{PERF_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{PERF_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{PERF_SCORE}}</text>
+            </svg>
+            <div class="rating">{{PERF_RATING}}</div>
+          </div>
+          <div class="gauge-card">
+            <div class="label" data-no="Tilgjengelighet" data-en="Accessibility">Tilgjengelighet</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{A11Y_LH_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{A11Y_LH_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{A11Y_LH_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{A11Y_LH_SCORE}}</text>
+            </svg>
+            <div class="rating">{{A11Y_LH_RATING}}</div>
+          </div>
+          <div class="gauge-card">
+            <div class="label" data-no="Beste praksis" data-en="Best Practices">Beste praksis</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{BP_LH_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{BP_LH_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{BP_LH_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{BP_LH_SCORE}}</text>
+            </svg>
+            <div class="rating">{{BP_LH_RATING}}</div>
+          </div>
+          <div class="gauge-card">
+            <div class="label">SEO</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{SEO_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{SEO_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{SEO_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{SEO_SCORE}}</text>
+            </svg>
+            <div class="rating">{{SEO_RATING}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MOBILE GAUGES ===== -->
+      <div class="device-section" id="device-mobile">
+        <div class="score-grid">
+          <div class="gauge-card">
+            <div class="label" data-no="Ytelse" data-en="Performance">Ytelse</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{M_PERF_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{M_PERF_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{M_PERF_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{M_PERF_SCORE}}</text>
+            </svg>
+            <div class="rating">{{M_PERF_RATING}}</div>
+          </div>
+          <div class="gauge-card">
+            <div class="label" data-no="Tilgjengelighet" data-en="Accessibility">Tilgjengelighet</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{M_A11Y_LH_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{M_A11Y_LH_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{M_A11Y_LH_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{M_A11Y_LH_SCORE}}</text>
+            </svg>
+            <div class="rating">{{M_A11Y_LH_RATING}}</div>
+          </div>
+          <div class="gauge-card">
+            <div class="label" data-no="Beste praksis" data-en="Best Practices">Beste praksis</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{M_BP_LH_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{M_BP_LH_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{M_BP_LH_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{M_BP_LH_SCORE}}</text>
+            </svg>
+            <div class="rating">{{M_BP_LH_RATING}}</div>
+          </div>
+          <div class="gauge-card">
+            <div class="label">SEO</div>
+            <svg class="gauge-svg" viewBox="0 0 160 110">
+              <path class="gauge-bg" d="M 15 85 A 65 65 0 0 1 145 85" />
+              <path class="gauge-fill {{M_SEO_GAUGE_CLASS}}" d="M 15 85 A 65 65 0 0 1 145 85"
+                    stroke-dasharray="204.2" stroke-dashoffset="{{M_SEO_DASH_OFFSET}}" />
+              <text class="gauge-tick-label" x="12" y="100">0</text>
+              <text class="gauge-tick-label" x="80" y="14">50</text>
+              <text class="gauge-tick-label" x="148" y="100">100</text>
+              <polygon class="gauge-needle" points="78,85 82,85 80,25" style="transform: rotate({{M_SEO_NEEDLE_DEG}}deg)" />
+              <circle class="gauge-center-dot" cx="80" cy="85" r="5" />
+              <text class="gauge-value" x="80" y="80">{{M_SEO_SCORE}}</text>
+            </svg>
+            <div class="rating">{{M_SEO_RATING}}</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 data-no="Nøkkelmetrikker" data-en="Key Metrics">Nøkkelmetrikker</h3>
+
+      <!-- Visual bar chart for metrics.
+        IMPORTANT: Always use full metric names so non-technical readers understand them.
+        For each metric, generate:
+        <div class="metric-bar-row">
+          <div class="metric-bar-label">FCP (First Contentful Paint)</div>
+          <div class="metric-bar-track">
+            <div class="metric-bar-fill good" style="width:{{FCP_BAR_PCT}}%">{{FCP_VALUE}}</div>
+          </div>
+        </div>
+        Use these full names:
+        - FCP = First Contentful Paint
+        - LCP = Largest Contentful Paint
+        - TBT = Total Blocking Time
+        - CLS = Cumulative Layout Shift
+        - SI  = Speed Index
+        Classes for fill: good, needs-improvement, poor -->
+      <div class="metric-bar-chart">
+        <!-- {{METRIC_BARS}} -->
+      </div>
+
+      <h3 data-no="Feilende kontroller" data-en="Failing Audits">Feilende kontroller</h3>
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th data-no="Kontroll" data-en="Audit">Kontroll</th>
+            <th data-no="Påvirkning" data-en="Impact">Påvirkning</th>
+            <th data-no="Beskrivelse" data-en="Description">Beskrivelse</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- {{FAILING_AUDITS_ROWS}} -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ===== UX FINDINGS ===== -->
+    <section id="ux">
+      <div class="section-header-lime">
+        <h2 data-no="UX-funn" data-en="UX Findings">UX-funn</h2>
+      </div>
+
+      <h3 data-no="Navigasjon og informasjonsarkitektur" data-en="Navigation & Information Architecture">Navigasjon og informasjonsarkitektur</h3>
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th data-no="Sjekk" data-en="Check">Sjekk</th>
+            <th>Status</th>
+            <th data-no="Notater" data-en="Notes">Notater</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- {{UX_NAV_ROWS}}
+            Use this pattern for expandable rows:
+            <tr class="finding-row" onclick="toggleDetail(this)">
+              <td><span class="expand-icon"></span> Check name</td>
+              <td><span class="status warn">WARN</span></td>
+              <td class="notes">Brief note</td>
+            </tr>
+            <tr class="finding-detail">
+              <td colspan="3">
+                <div class="detail-label" data-no="Detaljer:" data-en="Details:">Detaljer:</div>
+                <p>Full explanation...</p>
+                <div class="detail-recommendation">
+                  <div class="detail-label" data-no="Anbefaling:" data-en="Recommendation:">Anbefaling:</div>
+                  <p>How to fix...</p>
+                </div>
+              </td>
+            </tr>
+          -->
+        </tbody>
+      </table>
+
+      <h3 data-no="Innhold og lesbarhet" data-en="Content & Readability">Innhold og lesbarhet</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UX_CONTENT_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Interaksjonsdesign" data-en="Interaction Design">Interaksjonsdesign</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UX_INTERACTION_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Kognitiv belastning" data-en="Cognitive Load">Kognitiv belastning</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UX_COGNITIVE_ROWS}} --></tbody>
+      </table>
+    </section>
+
+    <!-- ===== UI FINDINGS ===== -->
+    <section id="ui">
+      <div class="section-header-lime">
+        <h2 data-no="UI-funn" data-en="UI Findings">UI-funn</h2>
+      </div>
+
+      <h3 data-no="Visuelt hierarki" data-en="Visual Hierarchy">Visuelt hierarki</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UI_HIERARCHY_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Typografi" data-en="Typography">Typografi</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UI_TYPOGRAPHY_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Farge og kontrast" data-en="Color & Contrast">Farge og kontrast</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UI_COLOR_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Avstand og layout" data-en="Spacing & Layout">Avstand og layout</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UI_SPACING_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Komponenter" data-en="Components">Komponenter</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{UI_COMPONENTS_ROWS}} --></tbody>
+      </table>
+    </section>
+
+    <!-- ===== ACCESSIBILITY FINDINGS ===== -->
+    <section id="accessibility">
+      <div class="section-header-lime">
+        <h2 data-no="Tilgjengelighetsfunn" data-en="Accessibility Findings">Tilgjengelighetsfunn</h2>
+      </div>
+
+      <h3 data-no="Oppfattbar" data-en="Perceivable">Oppfattbar</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{A11Y_PERCEIVABLE_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Betjenbar" data-en="Operable">Betjenbar</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{A11Y_OPERABLE_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Forståelig" data-en="Understandable">Forståelig</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{A11Y_UNDERSTANDABLE_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Robust" data-en="Robust">Robust</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{A11Y_ROBUST_ROWS}} --></tbody>
+      </table>
+    </section>
+
+    <!-- ===== BEST PRACTICES FINDINGS ===== -->
+    <section id="best-practices">
+      <div class="section-header-lime">
+        <h2 data-no="Beste praksis-funn" data-en="Best Practices Findings">Beste praksis-funn</h2>
+      </div>
+
+      <h3 data-no="Ytelsesindikatorer" data-en="Performance Indicators">Ytelsesindikatorer</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{BP_PERFORMANCE_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Sikkerhet" data-en="Security">Sikkerhet</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{BP_SECURITY_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="SEO-grunnlag" data-en="SEO Fundamentals">SEO-grunnlag</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{BP_SEO_ROWS}} --></tbody>
+      </table>
+
+      <h3 data-no="Kodekvalitet" data-en="Code Quality">Kodekvalitet</h3>
+      <table class="findings-table">
+        <thead><tr><th data-no="Sjekk" data-en="Check">Sjekk</th><th>Status</th><th data-no="Notater" data-en="Notes">Notater</th></tr></thead>
+        <tbody><!-- {{BP_CODE_ROWS}} --></tbody>
+      </table>
+    </section>
+
+    <!-- ===== PRIORITY FIXES ===== -->
+    <section id="priority-fixes">
+      <h2 data-no="Prioriterte tiltak" data-en="Priority Fixes">Prioriterte tiltak</h2>
+      <p data-no="Følgende problemer har størst påvirkning og bør utbedres først." data-en="The following issues have the highest impact and should be addressed first.">Følgende problemer har størst påvirkning og bør utbedres først.</p>
+      <ol class="priority-list">
+        <!-- {{PRIORITY_FIXES_ITEMS}} -->
+      </ol>
+    </section>
+
+    <!-- ===== CUSTOMER SUMMARY ===== -->
+    <section id="customer-summary">
+      <h2 data-no="Oppsummering" data-en="Summary">Oppsummering</h2>
+      <div style="background: var(--color-gray-100); border-radius: 12px; padding: 1.75rem; border-left: 5px solid var(--color-lime); margin-top: 1rem; font-size: 1rem; line-height: 1.75;">
+        <!-- {{CUSTOMER_SUMMARY}}
+          Generate a 3-5 paragraph plain-language summary here suitable for sharing with a client.
+          It should cover:
+          1. Overall impression and scores across the four domains
+          2. The most critical issues found and their impact on users
+          3. Top 3-5 recommended actions in priority order
+          4. Positive aspects worth highlighting
+          Write in an accessible, professional tone — avoid technical jargon.
+          Include both data-no and data-en attributes on wrapper elements for bilingual support.
+        -->
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="report-footer">
+    <div>
+      <!-- <img class="footer-logo-img" src="TRE_LOGO_URL" alt="TRE Bergen"> -->
+      <div class="footer-logo-text">TRE BERGEN</div>
+    </div>
+    <div class="footer-text">trebergen.no</div>
+  </div>
+
+  <!-- ===== JAVASCRIPT ===== -->
+  <script>
+    // === Language Toggle ===
+    let currentLang = 'no';
+
+    function switchLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      document.documentElement.lang = lang;
+      // Use innerHTML to preserve child elements (expand icons, badges, etc.)
+      // Process deepest children first to avoid parent overwriting children
+      const elements = Array.from(document.querySelectorAll('[data-no][data-en]'));
+      // Sort by depth (deepest first) so children are updated before parents
+      elements.sort((a, b) => {
+        const depthA = getDepth(a);
+        const depthB = getDepth(b);
+        return depthB - depthA;
+      });
+      elements.forEach(el => {
+        // Only update leaf text nodes — skip elements whose children also have data-no/data-en
+        const hasTranslatableChildren = el.querySelector('[data-no][data-en]');
+        if (!hasTranslatableChildren) {
+          el.innerHTML = el.getAttribute('data-' + lang);
+        }
+      });
+    }
+
+    function getDepth(el) {
+      let depth = 0;
+      let node = el;
+      while (node.parentElement) { depth++; node = node.parentElement; }
+      return depth;
+    }
+
+    // === Expandable Finding Rows ===
+    function toggleDetail(row) {
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('finding-detail')) {
+        row.classList.toggle('expanded');
+        detail.classList.toggle('visible');
+      }
+    }
+
+    // === Device Toggle (Desktop / Mobile) ===
+    function switchDevice(device) {
+      document.querySelectorAll('.device-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.device === device);
+      });
+      document.querySelectorAll('.device-section').forEach(sec => {
+        sec.classList.remove('active');
+      });
+      document.getElementById('device-' + device).classList.add('active');
+      // Re-apply gauge colors for newly visible section
+      applyGaugeColors();
+    }
+
+    // === Speedometer gradient: red (0) → yellow (50) → green (100) ===
+    function scoreToColor(score) {
+      // 0 = red (#dc2626), 50 = yellow (#eab308), 100 = green (#16a34a)
+      let r, g, b;
+      if (score <= 50) {
+        const t = score / 50;
+        r = Math.round(220 + (234 - 220) * t);
+        g = Math.round(38 + (179 - 38) * t);
+        b = Math.round(38 + (8 - 38) * t);
+      } else {
+        const t = (score - 50) / 50;
+        r = Math.round(234 + (22 - 234) * t);
+        g = Math.round(179 + (163 - 179) * t);
+        b = Math.round(8 + (74 - 8) * t);
+      }
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    // Apply gradient colors to all speedometer gauges
+    function applyGaugeColors() {
+      document.querySelectorAll('.gauge-card').forEach(card => {
+        const valueEl = card.querySelector('.gauge-value');
+        const fillEl = card.querySelector('.gauge-fill');
+        if (valueEl && fillEl) {
+          const score = parseInt(valueEl.textContent, 10);
+          if (!isNaN(score)) {
+            fillEl.style.stroke = scoreToColor(score);
+          }
+        }
+      });
+    }
+    applyGaugeColors();
+
+    // === Clickable count badges: scroll to section and expand matching rows ===
+    document.querySelectorAll('.filter-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const filterStatus = this.dataset.filter;
+        const section = document.getElementById(targetId);
+
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          setTimeout(() => {
+            // Collapse all details in the section first
+            section.querySelectorAll('.finding-detail.visible').forEach(d => {
+              d.classList.remove('visible');
+              if (d.previousElementSibling) d.previousElementSibling.classList.remove('expanded');
+            });
+
+            // Expand rows matching the filter status
+            section.querySelectorAll('.finding-row').forEach(row => {
+              const statusEl = row.querySelector('.status');
+              if (statusEl && statusEl.classList.contains(filterStatus)) {
+                row.classList.add('expanded');
+                const detail = row.nextElementSibling;
+                if (detail && detail.classList.contains('finding-detail')) {
+                  detail.classList.add('visible');
+                }
+                row.style.background = 'var(--color-lime-light)';
+                setTimeout(() => { row.style.background = ''; }, 1500);
+              }
+            });
+          }, 500);
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

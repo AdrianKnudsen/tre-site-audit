@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <!-- Metadata og grunnleggende innstillinger -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nettstedsrevisjon — TRE Bergen</title>
+
+    <!-- Google Fonts: Jost -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Hovedstilark -->
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <!-- =================================================================
+         LANDING PAGE
+         Hovedsiden hvor brukeren fyller inn URL og API-nøkkel
+         ================================================================= -->
+    <div class="landing" id="landing">
+      <!-- Logo og overskrifter -->
+      <div class="logo-text">TRE BERGEN</div>
+      <h1>Nettstedsrevisjon</h1>
+      <p class="subtitle">
+        Få en komplett analyse av UX, UI, tilgjengelighet, ytelse og beste
+        praksis — drevet av AI.
+      </p>
+
+      <!-- Innsendingsskjema -->
+      <div class="form-card">
+        <form id="auditForm" onsubmit="startAudit(event)">
+          <!-- URL-input -->
+          <div class="form-group">
+            <label for="urlInput">Nettadresse</label>
+            <input
+              type="text"
+              id="urlInput"
+              placeholder="https://example.com"
+              required
+              autocomplete="url"
+            />
+          </div>
+
+          <!-- API-nøkkel input -->
+          <div class="form-group">
+            <label for="apiKeyInput">Anthropic API-nøkkel</label>
+            <input
+              type="password"
+              id="apiKeyInput"
+              placeholder="sk-ant-..."
+              required
+            />
+            <div class="hint">
+              Nøkkelen sendes kun til Anthropic for AI-evaluering. Den lagres
+              ikke.
+            </div>
+          </div>
+
+          <!-- Submit-knapp -->
+          <button type="submit" class="btn-audit" id="submitBtn">
+            Start revisjon
+          </button>
+        </form>
+
+        <!-- Feilmeldingsbanner (skjult som standard) -->
+        <div class="error-banner" id="errorBanner"></div>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         LOADING VIEW
+         Vises mens revisjonen pågår med progresjonsindikatorer
+         ================================================================= -->
+    <div class="loading-view hidden" id="loading">
+      <div class="loading-card">
+        <h2>Revisjon pågår...</h2>
+
+        <!-- Progresjonslinje -->
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+
+        <!-- Steg-for-steg indikator -->
+        <div class="progress-steps">
+          <!-- Steg 1: PageSpeed Insights -->
+          <div class="progress-step" id="step1">
+            <div class="step-icon">1</div>
+            <span>Henter PageSpeed Insights-data...</span>
+          </div>
+
+          <!-- Steg 2: HTML-henting -->
+          <div class="progress-step" id="step2">
+            <div class="step-icon">2</div>
+            <span>Henter sidens HTML...</span>
+          </div>
+
+          <!-- Steg 3: AI-analyse -->
+          <div class="progress-step" id="step3">
+            <div class="step-icon">3</div>
+            <span>AI analyserer 87 kriterier...</span>
+          </div>
+
+          <!-- Steg 4: Rapportgenerering -->
+          <div class="progress-step" id="step4">
+            <div class="step-icon">4</div>
+            <span>Genererer rapport...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         REPORT VIEW
+         Viser den genererte revisjonsrapporten
+         ================================================================= -->
+    <div class="report-view hidden" id="reportView">
+      <!-- Handlingsknapper over rapporten -->
+      <div class="report-actions">
+        <!-- Tilbake-knapp -->
+        <button class="btn" onclick="goBack()">← Ny revisjon</button>
+
+        <!-- Eksportknapper -->
+        <div>
+          <button class="btn" onclick="printReport()">Skriv ut</button>
+          <button class="btn btn-primary" onclick="downloadReport()">
+            Last ned HTML
+          </button>
+        </div>
+      </div>
+
+      <!-- Iframe som viser rapporten -->
+      <iframe
+        class="report-frame"
+        id="reportFrame"
+        sandbox="allow-scripts allow-same-origin"
+      ></iframe>
+    </div>
+
+    <!-- =================================================================
+         FOOTER
+         Bunntekst med logo og nettadresse
+         ================================================================= -->
+    <div class="site-footer" id="siteFooter">
+      <div class="footer-logo">TRE BERGEN</div>
+      <div>trebergen.no</div>
+    </div>
+
+    <!-- Hovedscript for applikasjonens funksjonalitet -->
+    <script src="./js/main.js"></script>
+  </body>
+</html>
