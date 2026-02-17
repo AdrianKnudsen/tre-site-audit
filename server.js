@@ -51,7 +51,7 @@ app.post('/api/audit', async (req, res) => {
     send('progress', { step: 1, message_no: 'Henter PageSpeed Insights-data (desktop + mobil)...', message_en: 'Fetching PageSpeed Insights data (desktop + mobile)...' });
 
     const [pageSpeedData, pageHtml] = await Promise.all([
-      getPageSpeedData(targetUrl.href),
+      getPageSpeedData(targetUrl.href, apiKey),
       fetchPageHtml(targetUrl.href),
     ]);
 
