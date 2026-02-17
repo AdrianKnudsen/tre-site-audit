@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getPageSpeedData } from './lib/pagespeed.js';
 import { fetchPageHtml } from './lib/fetchPage.js';
+import { runPreAudit } from './lib/preAudit.js';
 import { runClaudeAudit } from './lib/claudeAudit.js';
 import { buildReport } from './lib/reportBuilder.js';
 
@@ -59,12 +60,15 @@ app.post('/api/audit', async (req, res) => {
       fetchPageHtml(targetUrl.href),
     ]);
 
-    send('progress', { step: 2, message_no: 'PageSpeed-data hentet. Starter AI-evaluering...', message_en: 'PageSpeed data fetched. Starting AI evaluation...' });
+    send('progress', { step: 2, message_no: 'Kjører automatiske HTML-sjekker...', message_en: 'Running automated HTML checks...' });
 
-    // Step 2: Run Claude audit
-    send('progress', { step: 3, message_no: 'Claude analyserer sidens HTML mot 87 kriterier...', message_en: 'Claude is analyzing the page HTML against 87 criteria...' });
+    // Step 2: Run pre-audit (automated checks)
+    const preAuditData = await runPreAudit(pageHtml, targetUrl.href);
 
-    const claudeData = await runClaudeAudit(pageHtml, targetUrl.href, apiKey);
+    // Step 3: Run Claude audit (only visual/subjective checks)
+    send('progress', { step: 3, message_no: 'Claude evaluerer visuelle og subjektive kriterier...', message_en: 'Claude evaluating visual and subjective criteria...' });
+
+    const claudeData = await runClaudeAudit(pageHtml, targetUrl.href, apiKey, preAuditData);
 
     send('progress', { step: 4, message_no: 'AI-evaluering fullført. Genererer rapport...', message_en: 'AI evaluation complete. Generating report...' });
 
