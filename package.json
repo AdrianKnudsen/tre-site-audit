@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "TRE Bergen Website Audit Tool — Full-stack webapp for comprehensive website audits",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
-    "express": "^4.21.0"
+    "chrome-launcher": "^1.2.1",
+    "express": "^4.21.0",
+    "lighthouse": "^13.0.3"
   }
 }

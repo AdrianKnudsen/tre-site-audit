@@ -6,12 +6,16 @@
  *   POST /api/audit     → SSE stream that runs the full audit
  */
 
-const express = require('express');
-const path = require('path');
-const { getPageSpeedData } = require('./lib/pagespeed');
-const { fetchPageHtml } = require('./lib/fetchPage');
-const { runClaudeAudit } = require('./lib/claudeAudit');
-const { buildReport } = require('./lib/reportBuilder');
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { getPageSpeedData } from './lib/pagespeed.js';
+import { fetchPageHtml } from './lib/fetchPage.js';
+import { runClaudeAudit } from './lib/claudeAudit.js';
+import { buildReport } from './lib/reportBuilder.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,7 +55,7 @@ app.post('/api/audit', async (req, res) => {
     send('progress', { step: 1, message_no: 'Henter PageSpeed Insights-data (desktop + mobil)...', message_en: 'Fetching PageSpeed Insights data (desktop + mobile)...' });
 
     const [pageSpeedData, pageHtml] = await Promise.all([
-      getPageSpeedData(targetUrl.href, apiKey),
+      getPageSpeedData(targetUrl.href),
       fetchPageHtml(targetUrl.href),
     ]);
 
