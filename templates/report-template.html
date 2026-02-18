@@ -12,14 +12,24 @@
   </style>
 </head>
 <body>
+  <!-- Global SVG Definitions -->
+  <svg width="0" height="0" style="position: absolute">
+    <defs>
+      <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color: #ef4444; stop-opacity: 1" />
+        <stop offset="50%" style="stop-color: #fbbf24; stop-opacity: 1" />
+        <stop offset="100%" style="stop-color: #16a34a; stop-opacity: 1" />
+      </linearGradient>
+    </defs>
+  </svg>
 
   <!-- ===== HEADER ===== -->
   <div class="report-header">
     <div class="header-top">
-      <div>
-        <!-- TRE Bergen Logo: Replace src with actual logo URL, or use text fallback -->
-        <!-- <img class="logo-img" src="TRE_LOGO_URL" alt="TRE Bergen"> -->
-        <div class="logo-text">TRE BERGEN</div>
+      <div class="logo-tre">
+        <span class="tre-t">T</span>
+        <span class="tre-r">R</span>
+        <span class="tre-e-bottom">E</span>
       </div>
       <div class="lang-toggle">
         <button class="lang-btn active" data-lang="no" onclick="switchLang('no')">
@@ -30,11 +40,10 @@
         </button>
       </div>
     </div>
-    <h1 data-no="Nettstedsrevisjon" data-en="Website Audit Report">Nettstedsrevisjon</h1>
-    <p class="meta">
-      <a href="{{URL}}">{{URL}}</a><br>
-      <span data-no="Revisjonsdato: {{DATE}}" data-en="Audit date: {{DATE}}">Revisjonsdato: {{DATE}}</span>
-    </p>
+  </div>
+  <div class="audit-meta">
+    <a href="{{URL}}" class="audit-url">{{URL}}</a>
+    <span class="audit-date" data-no="Revisjonsdato: {{DATE}}" data-en="Audit date: {{DATE}}">Revisjonsdato: {{DATE}}</span>
   </div>
 
   <div class="container">
@@ -509,15 +518,31 @@
 
   <!-- ===== FOOTER ===== -->
   <div class="report-footer">
-    <div>
-      <!-- <img class="footer-logo-img" src="TRE_LOGO_URL" alt="TRE Bergen"> -->
-      <div class="footer-logo-text">TRE BERGEN</div>
+    <div class="footer-text">
+      <a href="https://trebergen.no" target="_blank" rel="noopener noreferrer">trebergen.no</a>
     </div>
-    <div class="footer-text">trebergen.no</div>
+    <div>
+      <img class="footer-logo-img" src="TRE_LOGO_URL" alt="TRE Bergen">
+    </div>
   </div>
 
   <!-- ===== JAVASCRIPT ===== -->
   <script>
+    // === Format URL (remove http/https/www) ===
+    function formatURL() {
+      const urlElement = document.querySelector('.audit-url');
+      if (urlElement) {
+        const href = urlElement.getAttribute('href');
+        let displayUrl = href
+          .replace(/^https?:\/\//, '')  // Remove http:// or https://
+          .replace(/^www\./, '');       // Remove www.
+        urlElement.textContent = displayUrl;
+      }
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', formatURL);
+
     // === Language Toggle ===
     let currentLang = 'no';
 

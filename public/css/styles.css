@@ -8,28 +8,36 @@
    CSS VARIABLER (Design tokens)
    Globale farger og typografi som brukes i hele applikasjonen
    ===================================================================== */
+
 :root {
-  /* Primærfarger - Lime/grønn brand color */
   --color-lime: #d2f78f;
   --color-lime-light: #e5fabb;
   --color-lime-dark: #b8e060;
   --color-lime-deep: #8ac926;
-
-  /* Basisfarger */
-  --color-black: #000000;
+  --color-dark-green: #184e37;
+  --color-dark-green-light: #1f5f42;
+  --color-dark-green-lighter: #2a7050;
+  --color-black: #0e0e0e;
   --color-white: #ffffff;
   --color-peach: #ffbe8a;
-
-  /* Gråtoner - for bakgrunner og tekst */
+  --color-peach-dark: #e5a06a;
+  --color-rose: #bb6d6d;
   --color-gray-50: #fafafa;
   --color-gray-100: #f5f5f5;
   --color-gray-200: #e5e5e5;
   --color-gray-300: #d4d4d4;
   --color-gray-600: #525252;
   --color-gray-800: #262626;
-
-  /* Typografi */
-  --font: "Jost", "Century Gothic", "CenturyGothic", "AppleGothic", sans-serif;
+  --color-pass: #16a34a;
+  --color-warn: #fbbf24;
+  --color-fail: #ef4444;
+  --color-na: #9ca3af;
+  --font-heading:
+    "brockmannmedium", "Century Gothic", "CenturyGothic", "AppleGothic",
+    sans-serif;
+  --font-body:
+    "brockmannmedium", "Century Gothic", "CenturyGothic", "AppleGothic",
+    sans-serif;
 }
 
 /* =====================================================================
@@ -43,9 +51,9 @@
 }
 
 body {
-  font-family: var(--font);
-  background: var(--color-gray-50);
-  color: var(--color-black);
+  font-family: var(--font-heading);
+  background: var(--color-dark-green);
+  color: var(--color-lime);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -70,7 +78,7 @@ body {
 
 /* Logo og hovedoverskrift */
 .logo-text {
-  font-family: var(--font);
+  font-family: var(--font-heading);
   font-size: 2rem;
   font-weight: 500;
   letter-spacing: 0.15em;
@@ -79,7 +87,7 @@ body {
 }
 
 .landing h1 {
-  font-family: var(--font);
+  font-family: var(--font-heading);
   font-size: 3rem;
   font-weight: 500;
   line-height: 1.15;
@@ -89,7 +97,7 @@ body {
 
 .landing .subtitle {
   font-size: 1.1rem;
-  color: var(--color-gray-600);
+  color: var(--color-lime-dark);
   margin-bottom: 2.5rem;
   text-align: center;
   max-width: 500px;
@@ -106,7 +114,7 @@ body {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
   width: 100%;
   max-width: 520px;
-  border: 1px solid var(--color-gray-200);
+  border: 1px solid var(--color-lime);
 }
 
 .form-group {
@@ -376,8 +384,8 @@ body {
    Bunntekst med logo og nettadresse
    ===================================================================== */
 .site-footer {
-  background: var(--color-black);
-  color: var(--color-white);
+  background: var(--color-gray-800);
+  color: var(--color-lime);
   padding: 1.5rem 2.5rem;
   display: flex;
   justify-content: space-between;
@@ -386,7 +394,7 @@ body {
 }
 
 .site-footer .footer-logo {
-  font-family: var(--font);
+  font-family: var(--font-heading);
   font-size: 1.15rem;
   font-weight: 500;
   letter-spacing: 0.15em;
