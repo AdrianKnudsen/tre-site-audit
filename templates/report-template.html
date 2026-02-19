@@ -4,9 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Website Audit Report — {{URL}}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
 {{REPORT_CSS}}
   </style>
@@ -328,7 +325,12 @@
           </tr>
         </thead>
         <tbody>
-          <!-- {{FAILING_AUDITS_ROWS}} -->
+          <!-- {{FAILING_AUDITS_ROWS}}
+            Structure:
+            - Kontroll: Short name of what was tested (e.g. "Bildedimensjoner", "Event listeners")
+            - Påvirkning: Impact level (WARN, FAIL)
+            - Beskrivelse: Detailed explanation of what needs to be fixed
+          -->
         </tbody>
       </table>
     </section>
@@ -350,7 +352,7 @@
         </thead>
         <tbody>
           <!-- {{UX_NAV_ROWS}}
-            Use this pattern for expandable rows:
+            Use this pattern for expandable rows (WARN/FAIL with extra details):
             <tr class="finding-row" onclick="toggleDetail(this)">
               <td><span class="expand-icon"></span> Check name</td>
               <td><span class="status warn">WARN</span></td>
@@ -365,6 +367,13 @@
                   <p>How to fix...</p>
                 </div>
               </td>
+            </tr>
+
+            For PASS rows without extra details (no need to click):
+            <tr>
+              <td>Check name</td>
+              <td><span class="status pass">PASS</span></td>
+              <td class="notes">Brief note</td>
             </tr>
           -->
         </tbody>
@@ -502,12 +511,11 @@
       <h2 data-no="Oppsummering" data-en="Summary">Oppsummering</h2>
       <div style="background: var(--color-gray-100); border-radius: 12px; padding: 1.75rem; border-left: 5px solid var(--color-lime); margin-top: 1rem; font-size: 1rem; line-height: 1.75;">
         <!-- {{CUSTOMER_SUMMARY}}
-          Generate a 3-5 paragraph plain-language summary here suitable for sharing with a client.
+          Generate a 3 paragraph plain-language summary here suitable for sharing with a client.
           It should cover:
-          1. Overall impression and scores across the four domains
-          2. The most critical issues found and their impact on users
-          3. Top 3-5 recommended actions in priority order
-          4. Positive aspects worth highlighting
+          1. Overall impression and scores across the four domains (Generelt inntrykk)
+          2. The most critical issues found and their impact on users (Viktigste utfordringer)
+          3. Positive aspects worth highlighting (Positive aspekter)
           Write in an accessible, professional tone — avoid technical jargon.
           Include both data-no and data-en attributes on wrapper elements for bilingual support.
         -->

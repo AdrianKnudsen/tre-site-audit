@@ -51,9 +51,9 @@
 }
 
 body {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   background: var(--color-dark-green);
-  color: var(--color-lime);
+  color: var(--color-dark-green);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -68,8 +68,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 2rem;
+  padding-top: 0;
 }
 
 .landing.hidden {
@@ -86,6 +87,54 @@ body {
   margin-bottom: 0.5rem;
 }
 
+/* Logo header positioned at top-left */
+.landing-header {
+  width: 100%;
+  padding: 2rem 2.5rem 1rem;
+  position: relative;
+}
+
+.logo-tre {
+  font-family: var(--font-heading);
+  font-size: 10rem;
+  font-weight: 500;
+  line-height: 0.85;
+  letter-spacing: 0.05em;
+  color: var(--color-lime);
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 0;
+  width: fit-content;
+}
+
+.tre-t {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.tre-r {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.tre-e-bottom {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* Main content area - centered */
+.landing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
 .landing h1 {
   font-family: var(--font-heading);
   font-size: 3rem;
@@ -93,6 +142,7 @@ body {
   line-height: 1.15;
   margin-bottom: 0.5rem;
   text-align: center;
+  color: var(--color-lime);
 }
 
 .landing .subtitle {
@@ -108,13 +158,13 @@ body {
    Input-felt, labels og submit-knapp
    ===================================================================== */
 .form-card {
-  background: var(--color-white);
+  background: var(--color-gray-50);
   border-radius: 16px;
   padding: 2.5rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 520px;
-  border: 1px solid var(--color-lime);
+  border: 1px solid var(--color-gray-200);
 }
 
 .form-group {
@@ -128,22 +178,29 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 0.4rem;
-  color: var(--color-gray-800);
+  color: var(--color-dark-green);
 }
 
 .form-group input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid var(--color-gray-200);
+  border: 2px solid var(--color-gray-300);
   border-radius: 10px;
-  font-family: var(--font);
+  font-family: var(--font-body);
   font-size: 1rem;
   transition: border-color 0.2s;
   outline: none;
+  background: var(--color-white);
+  color: var(--color-dark-green);
+}
+
+.form-group input::placeholder {
+  color: var(--color-gray-600);
+  opacity: 0.7;
 }
 
 .form-group input:focus {
-  border-color: var(--color-lime-deep);
+  border-color: var(--color-dark-green);
 }
 
 /* Hjelpetekst under input-felt */
@@ -193,8 +250,24 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 2rem;
+  padding-top: 0;
+}
+
+.loading-view .landing-header {
+  width: 100%;
+  padding: 2rem 2.5rem 1rem;
+  position: relative;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
 }
 
 .loading-view.hidden {
@@ -202,10 +275,10 @@ body {
 }
 
 .loading-card {
-  background: var(--color-white);
+  background: var(--color-gray-50);
   border-radius: 16px;
   padding: 3rem 2.5rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 520px;
   text-align: center;
@@ -213,10 +286,11 @@ body {
 }
 
 .loading-card h2 {
-  font-family: var(--font);
+  font-family: var(--font-heading);
   font-size: 1.5rem;
   font-weight: 500;
   margin-bottom: 1.5rem;
+  color: var(--color-dark-green);
 }
 
 /* Progresjonslinje */
@@ -226,15 +300,28 @@ body {
   background: var(--color-gray-200);
   border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: var(--color-lime-deep);
+  background: var(--color-dark-green);
   border-radius: 4px;
   transition: width 0.5s ease;
   width: 0%;
+}
+
+/* ETA Display */
+.eta-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--color-gray-600);
+  font-weight: 500;
+}
+
+.eta-display #etaText {
+  color: var(--color-dark-green);
 }
 
 /* Stegindikator med ikoner og tekst */
@@ -248,19 +335,19 @@ body {
   gap: 0.75rem;
   padding: 0.5rem 0;
   font-size: 0.95rem;
-  color: var(--color-gray-300);
+  color: var(--color-gray-600);
   transition: color 0.3s;
 }
 
 /* Aktivt steg */
 .progress-step.active {
-  color: var(--color-black);
+  color: var(--color-dark-green);
   font-weight: 600;
 }
 
 /* Fullførte steg */
 .progress-step.done {
-  color: var(--color-lime-deep);
+  color: var(--color-dark-green);
 }
 
 /* Steg-ikon (nummer eller checkmark) */
@@ -279,12 +366,12 @@ body {
 }
 
 .progress-step.active .step-icon {
-  background: var(--color-lime);
-  color: var(--color-black);
+  background: var(--color-dark-green);
+  color: var(--color-white);
 }
 
 .progress-step.done .step-icon {
-  background: var(--color-lime-deep);
+  background: var(--color-dark-green);
   color: var(--color-white);
 }
 
@@ -304,16 +391,51 @@ body {
 }
 
 /* =====================================================================
+   FUN FACTS SECTION
+   Displays rotating fun facts during loading
+   ===================================================================== */
+.fun-facts-section {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 520px;
+}
+
+.fun-facts-card {
+  background: var(--color-gray-50);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-gray-200);
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fun-fact-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-dark-green);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.fun-fact-text.visible {
+  opacity: 1;
+}
+
+/* =====================================================================
    ERROR STATE
    Viser feilmeldinger til brukeren
    ===================================================================== */
 .error-banner {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-fail);
   border-radius: 10px;
   padding: 1rem 1.25rem;
   margin-top: 1rem;
-  color: #dc2626;
+  color: var(--color-fail);
   font-size: 0.9rem;
   display: none;
 }
@@ -363,13 +485,13 @@ body {
 }
 
 .report-actions .btn-primary {
-  background: var(--color-black);
-  color: var(--color-white);
-  border-color: var(--color-black);
+  background: var(--color-dark-green);
+  color: var(--color-lime);
+  border-color: var(--color-dark-green);
 }
 
 .report-actions .btn-primary:hover {
-  background: var(--color-gray-800);
+  background: var(--color-dark-green-light);
 }
 
 /* Iframe som viser rapporten */
@@ -384,24 +506,33 @@ body {
    Bunntekst med logo og nettadresse
    ===================================================================== */
 .site-footer {
-  background: var(--color-gray-800);
+  background: var(--color-dark-green);
   color: var(--color-lime);
-  padding: 1.5rem 2.5rem;
+  padding: 2rem 2.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
 }
 
-.site-footer .footer-logo {
-  font-family: var(--font-heading);
-  font-size: 1.15rem;
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+.site-footer .footer-text {
+  font-size: 0.9rem;
+  color: var(--color-lime-dark);
 }
 
-.site-footer a {
+.site-footer .footer-text a {
   color: var(--color-lime);
   text-decoration: none;
+  transition: color 0.2s;
+}
+
+.site-footer .footer-text a:hover {
+  color: var(--color-lime-light);
+  text-decoration: underline;
+}
+
+.site-footer .footer-logo-img {
+  height: 46px;
+  width: auto;
+  filter: brightness(0) invert(1);
 }

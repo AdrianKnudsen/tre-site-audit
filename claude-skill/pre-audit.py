@@ -70,6 +70,11 @@ class AuditHTMLParser(HTMLParser):
         self._current_heading = None
         self._in_style = False
         self._style_content = ""
+        # CSS-derived properties
+        self.body_font_size_px = None
+        self.body_line_height = None
+        self.has_media_queries = False
+        self.has_print_media = False
 
     def _attr_dict(self, attrs):
         return {k: v for k, v in attrs}
@@ -200,12 +205,37 @@ class AuditHTMLParser(HTMLParser):
         if self._in_style and tag_lower == "style":
             self._in_style = False
             self._extract_fonts_colors(self._style_content)
+            self._extract_css_properties(self._style_content)
         if self._tag_stack and self._tag_stack[-1] == tag_lower:
             self._tag_stack.pop()
 
     def handle_data(self, data):
         if self._capture: self._captured_text += data
         if self._in_style: self._style_content += data
+
+    def _extract_css_properties(self, css_text):
+        """Extract deterministic CSS properties for automated checks."""
+        # Media queries → responsive layout
+        if re.search(r'@media\b', css_text, re.IGNORECASE):
+            self.has_media_queries = True
+        if re.search(r'@media\s+print', css_text, re.IGNORECASE):
+            self.has_print_media = True
+
+        # Body font-size (px / rem / em)
+        if self.body_font_size_px is None:
+            m = re.search(r'body\b[^{]*\{[^}]*?font-size\s*:\s*([\d.]+)(px|rem|em)\b', css_text, re.IGNORECASE)
+            if m:
+                v, u = float(m.group(1)), m.group(2).lower()
+                self.body_font_size_px = v * 16 if u in ('rem', 'em') else v
+
+        # Body line-height (unitless ratio)
+        if self.body_line_height is None:
+            m = re.search(r'body\b[^{]*\{[^}]*?line-height\s*:\s*([\d.]+)\s*[;}\n]', css_text, re.IGNORECASE)
+            if m:
+                try:
+                    self.body_line_height = float(m.group(1))
+                except ValueError:
+                    pass
 
     def _extract_fonts_colors(self, css_text):
         for m in re.finditer(r'font-family\s*:\s*([^;}]+)', css_text, re.IGNORECASE):
@@ -464,6 +494,15 @@ def run_bp_checks(p, url):
         findings["bp_code"].append(_f("Favicon", "Favicon", "warn", "Ikke funnet i HTML", "Not found in HTML",
             rec="Legg til favicon.", rec_en="Add favicon."))
 
+    # Print stylesheet
+    if p.has_print_media:
+        findings["bp_code"].append(_f("Utskriftsstil vurdert", "Print stylesheet considered", "pass",
+            "@media print funnet", "@media print found"))
+    else:
+        findings["bp_code"].append(_f("Utskriftsstil vurdert", "Print stylesheet considered", "warn",
+            "Ingen @media print funnet", "No @media print found",
+            rec="Legg til @media print for bedre utskriftsvisning.", rec_en="Add @media print for better print layout."))
+
     return findings
 
 
@@ -498,10 +537,22 @@ def run_ux_checks(p):
         findings["ux_nav"].append(_f("Footer med nyttelenker", "Footer with utility links", "warn", "Ingen <footer>", "No <footer>",
             rec="Legg til footer.", rec_en="Add footer."))
 
-    # All visual checks → AI
+    # Body text font size — automated from CSS
+    if p.body_font_size_px is not None:
+        if p.body_font_size_px >= 16:
+            findings["ux_content"].append(_f("Brødtekst min 16px", "Body text min 16px", "pass",
+                f"{p.body_font_size_px:.0f}px", f"{p.body_font_size_px:.0f}px"))
+        else:
+            findings["ux_content"].append(_f("Brødtekst min 16px", "Body text min 16px", "fail",
+                f"{p.body_font_size_px:.0f}px (min 16px kreves)", f"{p.body_font_size_px:.0f}px (min 16px required)",
+                rec="Øk brødtekstens font-size til minst 16px.", rec_en="Increase body font-size to at least 16px."))
+    else:
+        findings["ux_content"].append(_f("Brødtekst min 16px", "Body text min 16px", _ai(), "", "", automated=False))
+
+    # All remaining visual checks → AI
     for key, checks in [
         ("ux_content", [("Overskrifter beskrivende og skannbare","Headlines descriptive and scannable"),
-            ("Brødtekst min 16px","Body text min 16px"),("Linjelengde 45-75 tegn","Line length 45-75 chars"),
+            ("Linjelengde 45-75 tegn","Line length 45-75 chars"),
             ("Kontrast tekst/bakgrunn","Contrast text/background"),("Innhold hierarki","Content hierarchy")]),
         ("ux_interaction", [("Primær CTA identifiserbar","Primary CTA identifiable"),
             ("Interaktive elementer ser klikkbare ut","Interactive elements look clickable"),
@@ -535,7 +586,8 @@ def run_ui_checks(p):
     ]:
         for c, e in checks:
             f = _f(c, e, _ai(), "", "", automated=False)
-            # Inject font data into relevant check
+
+            # Automated: font families
             if e == "Consistent font families" and fc > 0:
                 if fc <= 3:
                     f["status"] = "pass"
@@ -547,6 +599,36 @@ def run_ui_checks(p):
                     f["note"] = f"{fc} fonter (maks 3 anbefalt)"
                     f["note_en"] = f"{fc} fonts (max 3 recommended)"
                     f["automated"] = True
+
+            # Automated: line height from CSS
+            elif e == "Line height" and p.body_line_height is not None:
+                lh = p.body_line_height
+                if 1.4 <= lh <= 1.6:
+                    f["status"] = "pass"
+                    f["note"] = f"linjehøyde {lh} (anbefalt 1.4–1.6)"
+                    f["note_en"] = f"line-height {lh} (recommended 1.4–1.6)"
+                else:
+                    f["status"] = "warn"
+                    f["note"] = f"linjehøyde {lh} (anbefalt 1.4–1.6)"
+                    f["note_en"] = f"line-height {lh} (recommended 1.4–1.6)"
+                    f["recommendation"] = "Sett line-height til mellom 1.4 og 1.6 for best lesbarhet."
+                    f["recommendation_en"] = "Set line-height between 1.4 and 1.6 for best readability."
+                f["automated"] = True
+
+            # Automated: responsive layout (media queries)
+            elif e == "Responsive layout":
+                if p.has_media_queries:
+                    f["status"] = "pass"
+                    f["note"] = "@media queries funnet"
+                    f["note_en"] = "@media queries found"
+                else:
+                    f["status"] = "warn"
+                    f["note"] = "Ingen @media queries i inline CSS"
+                    f["note_en"] = "No @media queries in inline CSS"
+                    f["recommendation"] = "Legg til responsive breakpoints med @media."
+                    f["recommendation_en"] = "Add responsive breakpoints with @media."
+                f["automated"] = True
+
             findings[key].append(f)
 
     return findings

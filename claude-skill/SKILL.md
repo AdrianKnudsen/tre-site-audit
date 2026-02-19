@@ -85,8 +85,8 @@ tre-site-audit/
 │   ├── preAudit.js             # Python pre-audit.py wrapper
 │   ├── claudeAudit.js          # Claude API + merge logic
 │   └── reportBuilder.js        # HTML report generator
-├── site-auditor-upgrade/
-│   └── pre-audit.py            # Automated HTML checker
+├── claude-skill/
+│   └── pre-audit.py            # Automated HTML checker (legacy)
 └── public/
     ├── index.html              # Landing page
     └── js/main.js              # Frontend logic

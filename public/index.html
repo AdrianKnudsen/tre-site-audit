@@ -7,7 +7,7 @@
     <title>Nettstedsrevisjon — TRE Bergen</title>
 
     <!-- Fonts: Brockmann -->
-    <link rel="stylesheet" href="../public/fonts/stylesheet.css" />
+    <link rel="stylesheet" href="./fonts/stylesheet.css" />
 
     <!-- Hovedstilark -->
     <link rel="stylesheet" href="./css/styles.css" />
@@ -18,16 +18,25 @@
          Hovedsiden hvor brukeren fyller inn URL og API-nøkkel
          ================================================================= -->
     <div class="landing" id="landing">
-      <!-- Logo og overskrifter -->
-      <div class="logo-text">TRE BERGEN</div>
-      <h1>Nettstedsrevisjon</h1>
-      <p class="subtitle">
-        Få en komplett analyse av UX, UI, tilgjengelighet, ytelse og beste
-        praksis — drevet av AI.
-      </p>
+      <!-- Logo header at top-left -->
+      <div class="landing-header">
+        <div class="logo-tre">
+          <span class="tre-t">T</span>
+          <span class="tre-r">R</span>
+          <span class="tre-e-bottom">E</span>
+        </div>
+      </div>
 
-      <!-- Innsendingsskjema -->
-      <div class="form-card">
+      <!-- Main content centered -->
+      <div class="landing-content">
+        <h1>Nettstedsrevisjon</h1>
+        <p class="subtitle">
+          Få en komplett analyse av UX, UI, tilgjengelighet, ytelse og beste
+          praksis — drevet av AI.
+        </p>
+
+        <!-- Innsendingsskjema -->
+        <div class="form-card">
         <form id="auditForm" onsubmit="startAudit(event)">
           <!-- URL-input -->
           <div class="form-group">
@@ -64,6 +73,7 @@
 
         <!-- Feilmeldingsbanner (skjult som standard) -->
         <div class="error-banner" id="errorBanner"></div>
+        </div>
       </div>
     </div>
 
@@ -72,12 +82,28 @@
          Vises mens revisjonen pågår med progresjonsindikatorer
          ================================================================= -->
     <div class="loading-view hidden" id="loading">
-      <div class="loading-card">
+      <!-- Logo header at top-left -->
+      <div class="landing-header">
+        <div class="logo-tre">
+          <span class="tre-t">T</span>
+          <span class="tre-r">R</span>
+          <span class="tre-e-bottom">E</span>
+        </div>
+      </div>
+
+      <!-- Loading content centered -->
+      <div class="loading-content">
+        <div class="loading-card">
         <h2>Revisjon pågår...</h2>
 
         <!-- Progresjonslinje -->
         <div class="progress-bar-track">
           <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+
+        <!-- ETA Display -->
+        <div class="eta-display" id="etaDisplay">
+          <span id="etaText">Estimert tid: ~93 sekunder</span>
         </div>
 
         <!-- Steg-for-steg indikator -->
@@ -97,13 +123,21 @@
           <!-- Steg 3: AI-analyse -->
           <div class="progress-step" id="step3">
             <div class="step-icon">3</div>
-            <span>AI analyserer 87 kriterier...</span>
+            <span id="step3Text">AI analyserer 87 kriterier...</span>
           </div>
 
           <!-- Steg 4: Rapportgenerering -->
           <div class="progress-step" id="step4">
             <div class="step-icon">4</div>
             <span>Genererer rapport...</span>
+          </div>
+        </div>
+        </div>
+
+        <!-- Fun Facts Section -->
+        <div class="fun-facts-section" id="funFactsSection">
+          <div class="fun-facts-card">
+            <p class="fun-fact-text" id="funFactText"></p>
           </div>
         </div>
       </div>
@@ -141,8 +175,12 @@
          Bunntekst med logo og nettadresse
          ================================================================= -->
     <div class="site-footer" id="siteFooter">
-      <div class="footer-logo">TRE BERGEN</div>
-      <div>trebergen.no</div>
+      <div class="footer-text">
+        <a href="https://trebergen.no" target="_blank" rel="noopener noreferrer">trebergen.no</a>
+      </div>
+      <div>
+        <img class="footer-logo-img" src="./images/TreLogo.svg" alt="TRE Bergen">
+      </div>
     </div>
 
     <!-- Hovedscript for applikasjonens funksjonalitet -->

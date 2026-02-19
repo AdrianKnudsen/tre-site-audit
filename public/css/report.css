@@ -1,3 +1,15 @@
+/* ===== Font Face ===== */
+@font-face {
+  font-family: "brockmannmedium";
+  src:
+    url("../fonts/brockmann-medium-webfont.woff2") format("woff2"),
+    url("../fonts/brockmann-medium-webfont.woff") format("woff"),
+    url("../fonts/brockmann-medium-webfont.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===== Tre Bergen Brand Styling ===== */
 
 :root {
@@ -737,6 +749,24 @@ p {
   transform: rotate(90deg);
 }
 
+.finding-row.no-expand-row {
+  cursor: default;
+}
+
+.finding-row.no-expand-row:hover {
+  background: transparent;
+}
+
+.finding-row .expand-icon.no-expand {
+  background: var(--color-gray-200);
+  cursor: default;
+  pointer-events: none;
+}
+
+.finding-row .expand-icon.no-expand::after {
+  border-left-color: var(--color-gray-400);
+}
+
 .finding-detail {
   display: none;
   background: var(--color-gray-100);
@@ -788,11 +818,13 @@ p {
   counter-reset: priority;
   list-style: none;
   padding: 0;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .priority-list li {
   counter-increment: priority;
-  padding: 1.25rem 1rem 1.25rem 4rem;
+  padding: 1.25rem 2rem 1.25rem 4.5rem;
   border-bottom: 1px solid var(--color-gray-200);
   position: relative;
 }
