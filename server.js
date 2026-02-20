@@ -14,6 +14,7 @@ import { fetchPageHtml } from './lib/fetchPage.js';
 import { runPreAudit } from './lib/preAudit.js';
 import { runClaudeAudit } from './lib/claudeAudit.js';
 import { buildReport } from './lib/reportBuilder.js';
+import { analyzeSitemap } from './lib/sitemapAnalyzer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,15 +56,28 @@ app.post('/api/audit', async (req, res) => {
     // Step 1: Fetch PageSpeed data + page HTML in parallel
     send('progress', { step: 1, message_no: 'Henter PageSpeed Insights-data (desktop + mobil)...', message_en: 'Fetching PageSpeed Insights data (desktop + mobile)...' });
 
-    const [pageSpeedData, pageHtml] = await Promise.all([
+    const [pageSpeedData, pageHtml, sitemapData] = await Promise.all([
       getPageSpeedData(targetUrl.href),
       fetchPageHtml(targetUrl.href),
+      analyzeSitemap(targetUrl.href).catch(err => {
+        console.warn('[Sitemap] Analysis failed:', err.message);
+        return null;
+      }),
     ]);
 
-    send('progress', { step: 2, message_no: 'Kjører automatiske HTML-sjekker...', message_en: 'Running automated HTML checks...' });
+    if (sitemapData?.hasSitemap) {
+      console.log(`[Sitemap] Found ${sitemapData.totalUrls} URLs, max depth: ${sitemapData.maxDepth}`);
+    }
+
+    send('progress', { step: 2, message_no: 'Henter CSS/JS-filer og kjører full automatisk analyse...', message_en: 'Fetching CSS/JS files and running full automated analysis...' });
 
     // Step 2: Run pre-audit (automated checks)
     const preAuditData = await runPreAudit(pageHtml, targetUrl.href);
+
+    // Inject sitemap data into pre-audit results for Claude context
+    if (sitemapData && preAuditData) {
+      preAuditData.sitemapAnalysis = sitemapData;
+    }
 
     // Step 3: Run Claude audit (only visual/subjective checks)
     send('progress', { step: 3, message_no: 'Claude evaluerer visuelle og subjektive kriterier...', message_en: 'Claude evaluating visual and subjective criteria...' });
