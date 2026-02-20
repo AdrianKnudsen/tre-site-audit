@@ -553,14 +553,14 @@ def run_ux_checks(p):
     for key, checks in [
         ("ux_content", [("Overskrifter beskrivende og skannbare","Headlines descriptive and scannable"),
             ("Linjelengde 45-75 tegn","Line length 45-75 chars"),
-            ("Kontrast tekst/bakgrunn","Contrast text/background"),("Innhold hierarki","Content hierarchy")]),
+            ("Språk tilpasset brukernes verden","Language matches users' vocabulary"),("Innhold hierarki","Content hierarchy")]),
         ("ux_interaction", [("Primær CTA identifiserbar","Primary CTA identifiable"),
-            ("Interaktive elementer ser klikkbare ut","Interactive elements look clickable"),
-            ("Tilbakemelding etter handlinger","Feedback after actions"),
-            ("Feiltilstander veileder","Error states guide recovery"),("Lastetilstander","Loading states")]),
-        ("ux_cognitive", [("Ikke overveldet med valg","Not overwhelmed with options"),
-            ("Relaterte elementer gruppert","Related items grouped"),
-            ("Progressiv avsløring","Progressive disclosure"),("Konsistente mønstre","Consistent patterns")]),
+            ("Interaktive elementer som forventet","Interactive elements behave as expected"),
+            ("Systemstatus kommunisert","System status communicated"),
+            ("Feilmeldinger veileder til løsning","Error messages guide recovery"),("Forebygging av feil","Error prevention")]),
+        ("ux_cognitive", [("Minimal kompleksitet og valg","Minimal complexity and choices"),
+            ("Gjenkjenning fremfor hukommelse","Recognition over recall"),
+            ("Gruppert innhold og progressiv avsløring","Grouped content and progressive disclosure"),("Konvensjoner og brukerkontroll","Conventions and user control")]),
     ]:
         for c, e in checks:
             findings[key].append(_f(c, e, _ai(), "", "", automated=False))
