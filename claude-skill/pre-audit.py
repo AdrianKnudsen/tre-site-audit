@@ -7,11 +7,14 @@ require visual/subjective AI judgment.  Outputs a partial audit-data JSON
 that the AI merges with its own visual evaluations before generating the
 final report.
 
-Covers ~25-30 of 64 checks automatically:
-  - Accessibility (WCAG): alt text, lang, headings, skip-link, ARIA, semantic HTML, form labels
+v1.1.0 — Updated to cover 101-point checklist (from 87).
+
+Covers ~30-35 of 101 checks automatically:
+  - Accessibility (WCAG): alt text, lang, headings, skip-link, ARIA, semantic HTML,
+    form labels, fieldset/legend, prefers-reduced-motion
   - Best Practices: HTTPS, meta tags, favicon, external links, image optimisation, viewport
-  - UI (partial): font count
-  - UX (partial): nav presence, breadcrumbs, search
+  - UI (partial): font count, line height, responsive layout
+  - UX (partial): nav, breadcrumbs, search, form design, shortcuts/accesskey, trust signals
 
 Usage:
     python3 pre-audit.py <html-file> <url> [-o /tmp/pre-audit-results.json]
@@ -75,6 +78,14 @@ class AuditHTMLParser(HTMLParser):
         self.body_line_height = None
         self.has_media_queries = False
         self.has_print_media = False
+        # New: checks added in v1.1.0
+        self.accesskeys = 0
+        self.autocomplete_inputs = 0
+        self.has_prefers_reduced_motion = False
+        # Trust signals
+        self.trust_signals = []  # list of detected trust signal types
+        # Extended form data for form design check
+        self.form_inputs_extended = []  # {type, required, placeholder, pattern, autocomplete}
 
     def _attr_dict(self, attrs):
         return {k: v for k, v in attrs}
@@ -87,6 +98,8 @@ class AuditHTMLParser(HTMLParser):
         for k, v in attrs:
             if k.startswith("aria-"):
                 self.aria_attrs[k] += 1
+            if k == "accesskey":
+                self.accesskeys += 1
 
         if tag_lower == "html":
             self.lang = ad.get("lang")
@@ -171,6 +184,17 @@ class AuditHTMLParser(HTMLParser):
                 aria_labelledby = ad.get("aria-labelledby", "")
                 has_label = bool(inp_id and inp_id in self.label_fors) or bool(aria_label) or bool(aria_labelledby)
                 self.form_inputs.append({"id": inp_id, "name": inp_name, "type": inp_type, "has_label": has_label})
+                # Extended form data for form design check (#21)
+                has_autocomplete = bool(ad.get("autocomplete", ""))
+                if has_autocomplete: self.autocomplete_inputs += 1
+                self.form_inputs_extended.append({
+                    "type": inp_type,
+                    "required": "required" in ad,
+                    "placeholder": bool(ad.get("placeholder", "")),
+                    "pattern": bool(ad.get("pattern", "")),
+                    "autocomplete": has_autocomplete,
+                    "name": inp_name,
+                })
             if inp_type == "search": self.has_search = True
 
         if tag_lower == "label":
@@ -179,6 +203,31 @@ class AuditHTMLParser(HTMLParser):
 
         if tag_lower == "fieldset": self.fieldsets += 1
         if tag_lower == "legend": self.legends += 1
+
+        # Textarea and select for extended form design check
+        if tag_lower == "textarea":
+            self.form_inputs_extended.append({
+                "type": "textarea", "required": "required" in ad,
+                "placeholder": bool(ad.get("placeholder", "")),
+                "pattern": False, "autocomplete": False,
+                "name": ad.get("name", ""),
+            })
+        if tag_lower == "select":
+            self.form_inputs_extended.append({
+                "type": "select", "required": "required" in ad,
+                "placeholder": False, "pattern": False, "autocomplete": False,
+                "name": ad.get("name", ""),
+            })
+
+        # Trust signals detection (#29)
+        cls = ad.get("class", "").lower()
+        role_val = ad.get("role", "").lower()
+        trust_kws = ["trust", "testimonial", "review", "rating", "badge", "certification", "verified", "secure", "guarantee"]
+        for kw in trust_kws:
+            if kw in cls or kw in role_val:
+                if kw not in self.trust_signals:
+                    self.trust_signals.append(kw)
+                break
 
         if tag_lower == "script":
             src = ad.get("src", "")
@@ -220,6 +269,9 @@ class AuditHTMLParser(HTMLParser):
             self.has_media_queries = True
         if re.search(r'@media\s+print', css_text, re.IGNORECASE):
             self.has_print_media = True
+        # prefers-reduced-motion → accessibility check #69
+        if re.search(r'prefers-reduced-motion', css_text, re.IGNORECASE):
+            self.has_prefers_reduced_motion = True
 
         # Body font-size (px / rem / em)
         if self.body_font_size_px is None:
@@ -314,6 +366,18 @@ def run_a11y_checks(p, url):
     findings["a11y_operable"].append(_f("Trykkmål min 44x44px", "Touch targets min 44x44px", _ai(), "", "", automated=False))
     findings["a11y_operable"].append(_f("Ingen blinkende innhold", "No flashing content", "pass", "Ingen blinkende elementer", "No flashing elements detected"))
 
+    # #69 - Reduced motion support
+    if p.has_prefers_reduced_motion:
+        findings["a11y_operable"].append(_f("Redusert bevegelse støttet", "Reduced motion support", "pass",
+            "prefers-reduced-motion funnet i CSS", "prefers-reduced-motion found in CSS"))
+    else:
+        findings["a11y_operable"].append(_f("Redusert bevegelse støttet", "Reduced motion support", "warn",
+            "prefers-reduced-motion ikke funnet i inline CSS", "prefers-reduced-motion not found in inline CSS",
+            detail="Sjekker kun inline <style>-blokker; eksterne CSS-filer kan inneholde dette.",
+            detail_en="Only checks inline <style> blocks; external CSS files may contain this.",
+            rec="Legg til @media (prefers-reduced-motion: reduce) for animasjoner.",
+            rec_en="Add @media (prefers-reduced-motion: reduce) for animations."))
+
     # -- Understandable --
     # Lang
     if p.lang:
@@ -336,7 +400,8 @@ def run_a11y_checks(p, url):
         findings["a11y_understandable"].append(_f("Skjema-labels tilknyttet felt", "Form labels associated with inputs", "pass",
             f"Alle {len(p.form_inputs)} felt har labels", f"All {len(p.form_inputs)} fields have labels"))
 
-    for c, e in [("Feilmeldinger veileder","Error messages guide recovery"),("Konsistent navigasjon","Consistent navigation across pages")]:
+    for c, e in [("Feilmeldinger veileder","Error messages guide recovery"),("Konsistent navigasjon","Consistent navigation across pages"),
+                 ("Forkortelser og sjargong forklart","Abbreviations and jargon explained")]:
         findings["a11y_understandable"].append(_f(c, e, _ai(), "", "", automated=False))
 
     # -- Robust --
@@ -378,6 +443,21 @@ def run_a11y_checks(p, url):
     findings["a11y_robust"].append(_f("Semantiske HTML-elementer", "Semantic HTML elements used", st,
         ", ".join(sem) if sem else "Ingen funnet", ", ".join(sem) if sem else "None found",
         rec="Bruk nav, main, header, footer." if st != "pass" else "", rec_en="Use nav, main, header, footer." if st != "pass" else ""))
+
+    # Fieldset/legend
+    if p.form_inputs:
+        if p.fieldsets > 0:
+            findings["a11y_robust"].append(_f("Skjema fieldset/legend", "Forms have fieldset/legend", "pass",
+                f"{p.fieldsets} fieldset, {p.legends} legend", f"{p.fieldsets} fieldset, {p.legends} legend"))
+        else:
+            findings["a11y_robust"].append(_f("Skjema fieldset/legend", "Forms have fieldset/legend", "warn",
+                "Ingen fieldset funnet", "No fieldset found",
+                rec="Grupper relaterte felt med <fieldset> og <legend>.", rec_en="Group related fields with <fieldset> and <legend>."))
+    else:
+        findings["a11y_robust"].append(_f("Skjema fieldset/legend", "Forms have fieldset/legend", "n/a", "Ingen skjemafelt", "No form fields"))
+
+    # #80 - Cross-browser compatibility (cannot be automated from HTML alone)
+    findings["a11y_robust"].append(_f("Kryssleser-kompatibilitet", "Cross-browser and cross-device compatibility", _ai(), "", "", automated=False))
 
     return findings
 
@@ -433,6 +513,7 @@ def run_bp_checks(p, url):
         findings["bp_security"].append(_f("Ingen mixed content", "No mixed content", "n/a", "N/A (HTTP)", "N/A (HTTP)"))
 
     findings["bp_security"].append(_f("CSP-headere", "CSP headers", _ai(), "", "", automated=False))
+    findings["bp_security"].append(_f("Ingen eksponerte sensitive data", "No exposed sensitive data in source", _ai(), "", "", automated=False))
 
     # External link attrs
     bad = [l for l in p.external_links if not l["has_noopener"] or not l["has_noreferrer"]]
@@ -469,14 +550,27 @@ def run_bp_checks(p, url):
 
     findings["bp_seo"].append(_f("Heading-hierarki for SEO", "Heading hierarchy for SEO", _ai(), "Se a11y", "See a11y", automated=False))
 
-    # Canonical + OG + structured data
-    extras = []
-    if p.has_canonical: extras.append("canonical")
-    if p.og_tags: extras.append(f"OG({len(p.og_tags)})")
-    if p.has_structured_data: extras.append("JSON-LD")
-    st = "pass" if len(extras) >= 2 else ("warn" if extras else "fail")
-    findings["bp_seo"].append(_f("Canonical, OG, strukturerte data", "Canonical, OG, structured data", st,
-        ", ".join(extras) if extras else "Mangler alt", ", ".join(extras) if extras else "All missing"))
+    # #94 Canonical URL
+    if p.has_canonical:
+        findings["bp_seo"].append(_f("Canonical URL", "Canonical URL specified", "pass", "Tilstede", "Present"))
+    else:
+        findings["bp_seo"].append(_f("Canonical URL", "Canonical URL specified", "warn", "Mangler", "Missing",
+            rec="Legg til <link rel=\"canonical\">.", rec_en="Add <link rel=\"canonical\">."))
+
+    # #95 Open Graph / social meta tags
+    if p.og_tags:
+        findings["bp_seo"].append(_f("OG/sosiale meta-tagger", "Open Graph / social meta tags", "pass",
+            f"{len(p.og_tags)} OG-tagger funnet", f"{len(p.og_tags)} OG tags found"))
+    else:
+        findings["bp_seo"].append(_f("OG/sosiale meta-tagger", "Open Graph / social meta tags", "warn", "Mangler", "Missing",
+            rec="Legg til Open Graph-tagger for bedre delingsvisning.", rec_en="Add Open Graph tags for better social sharing."))
+
+    # #96 Structured data (JSON-LD)
+    if p.has_structured_data:
+        findings["bp_seo"].append(_f("Strukturerte data (JSON-LD)", "Structured data (JSON-LD)", "pass", "Funnet", "Found"))
+    else:
+        findings["bp_seo"].append(_f("Strukturerte data (JSON-LD)", "Structured data (JSON-LD)", "warn", "Ikke funnet", "Not found",
+            rec="Legg til JSON-LD strukturerte data der det er relevant.", rec_en="Add JSON-LD structured data where appropriate."))
 
     # -- Code Quality --
     findings["bp_code"].append(_f("Ingen konsoll-feil", "No console errors", _ai(), "Sjekkes via nettleser", "Checked via browser", automated=False))
@@ -509,35 +603,49 @@ def run_bp_checks(p, url):
 def run_ux_checks(p):
     findings = {"ux_nav": [], "ux_content": [], "ux_interaction": [], "ux_cognitive": []}
 
-    # Nav presence
+    # --- Navigation & Information Architecture (7 checks: #1-#7) ---
+
+    # #1 Nav presence
     if p.has_nav:
         findings["ux_nav"].append(_f("Tydelig hovednavigasjon", "Clear primary navigation", "pass", "<nav> funnet", "<nav> found",
             "Visuell gruppering gjenstår for AI.", "Visual grouping assessment remains for AI.", automated=True))
     else:
         findings["ux_nav"].append(_f("Tydelig hovednavigasjon", "Clear primary navigation", _ai(), "Ingen <nav>", "No <nav>", automated=False))
 
+    # #2
     findings["ux_nav"].append(_f("Gjeldende side indikert", "Current page indicated", _ai(), "", "", automated=False))
 
-    # Breadcrumbs
+    # #3 Breadcrumbs
     if p.has_breadcrumb:
         findings["ux_nav"].append(_f("Brødsmulesti", "Breadcrumbs", "pass", "Funnet", "Found"))
     else:
         findings["ux_nav"].append(_f("Brødsmulesti", "Breadcrumbs", "n/a", "Ikke funnet (kan være tilsiktet)", "Not found (may be intentional)"))
 
-    # Search
+    # #4 Search
     if p.has_search:
         findings["ux_nav"].append(_f("Søkefunksjon", "Search functionality", "pass", "Funnet", "Found"))
     else:
         findings["ux_nav"].append(_f("Søkefunksjon", "Search functionality", _ai(), "Ikke funnet i HTML", "Not found in HTML", automated=False))
 
-    # Footer
+    # #5 Footer
     if p.has_footer:
         findings["ux_nav"].append(_f("Footer med nyttelenker", "Footer with utility links", _ai(), "<footer> funnet", "<footer> found", automated=False))
     else:
         findings["ux_nav"].append(_f("Footer med nyttelenker", "Footer with utility links", "warn", "Ingen <footer>", "No <footer>",
             rec="Legg til footer.", rec_en="Add footer."))
 
-    # Body text font size — automated from CSS
+    # #6 - 3-click rule (cannot be fully automated from single page)
+    findings["ux_nav"].append(_f("Innhold innen 3 klikk", "Important content within 3 clicks", _ai(), "", "", automated=False))
+
+    # #7 - IA follows mental model (subjective)
+    findings["ux_nav"].append(_f("IA følger brukernes mentale modell", "IA follows users' mental model", _ai(), "", "", automated=False))
+
+    # --- Content & Readability (7 checks: #8-#14) ---
+
+    # #8
+    findings["ux_content"].append(_f("Overskrifter beskrivende og skannbare", "Headlines descriptive and scannable", _ai(), "", "", automated=False))
+
+    # #9 Body text font size — automated from CSS
     if p.body_font_size_px is not None:
         if p.body_font_size_px >= 16:
             findings["ux_content"].append(_f("Brødtekst min 16px", "Body text min 16px", "pass",
@@ -549,21 +657,92 @@ def run_ux_checks(p):
     else:
         findings["ux_content"].append(_f("Brødtekst min 16px", "Body text min 16px", _ai(), "", "", automated=False))
 
-    # All remaining visual checks → AI
-    for key, checks in [
-        ("ux_content", [("Overskrifter beskrivende og skannbare","Headlines descriptive and scannable"),
-            ("Linjelengde 45-75 tegn","Line length 45-75 chars"),
-            ("Språk tilpasset brukernes verden","Language matches users' vocabulary"),("Innhold hierarki","Content hierarchy")]),
-        ("ux_interaction", [("Primær CTA identifiserbar","Primary CTA identifiable"),
-            ("Interaktive elementer som forventet","Interactive elements behave as expected"),
-            ("Systemstatus kommunisert","System status communicated"),
-            ("Feilmeldinger veileder til løsning","Error messages guide recovery"),("Forebygging av feil","Error prevention")]),
-        ("ux_cognitive", [("Minimal kompleksitet og valg","Minimal complexity and choices"),
-            ("Gjenkjenning fremfor hukommelse","Recognition over recall"),
-            ("Gruppert innhold og progressiv avsløring","Grouped content and progressive disclosure"),("Konvensjoner og brukerkontroll","Conventions and user control")]),
-    ]:
-        for c, e in checks:
-            findings[key].append(_f(c, e, _ai(), "", "", automated=False))
+    # #10-#12 Visual/subjective content checks → AI
+    for c, e in [("Linjelengde 45-75 tegn","Line length 45-75 chars"),
+                 ("Språk tilpasset brukernes verden","Language matches users' vocabulary"),
+                 ("Innhold hierarki","Content hierarchy")]:
+        findings["ux_content"].append(_f(c, e, _ai(), "", "", automated=False))
+
+    # #13 - Images relevant and high-quality (subjective)
+    findings["ux_content"].append(_f("Bilder relevante og av god kvalitet", "Images relevant, high-quality, and support content", _ai(), "", "", automated=False))
+
+    # #14 - Content aligns with user/business goals (subjective)
+    findings["ux_content"].append(_f("Innhold matcher bruker- og forretningsmål", "Content aligns with user and business goals", _ai(), "", "", automated=False))
+
+    # --- Interaction Design (8 checks: #15-#22) ---
+
+    # #15-#19 Existing subjective interaction checks → AI
+    for c, e in [("Primær CTA identifiserbar","Primary CTA identifiable"),
+                 ("Interaktive elementer som forventet","Interactive elements behave as expected"),
+                 ("Systemstatus kommunisert","System status communicated"),
+                 ("Feilmeldinger veileder til løsning","Error messages guide recovery"),
+                 ("Forebygging av feil","Error prevention")]:
+        findings["ux_interaction"].append(_f(c, e, _ai(), "", "", automated=False))
+
+    # #20 - Shortcuts and accelerators (partially automated: accesskey, autocomplete)
+    ak = p.accesskeys
+    ac = p.autocomplete_inputs
+    if ak > 0 or ac > 0:
+        parts = []
+        if ak: parts.append(f"{ak} accesskey")
+        if ac: parts.append(f"{ac} autocomplete")
+        findings["ux_interaction"].append(_f("Snarveier for erfarne brukere", "Shortcuts and accelerators for experienced users", "pass",
+            ", ".join(parts), ", ".join(parts),
+            detail="accesskey- og autocomplete-attributter gir snarveier.", detail_en="accesskey and autocomplete attributes provide shortcuts."))
+    else:
+        findings["ux_interaction"].append(_f("Snarveier for erfarne brukere", "Shortcuts and accelerators for experienced users", _ai(),
+            "Ingen accesskey/autocomplete funnet i HTML", "No accesskey/autocomplete found in HTML", automated=False))
+
+    # #21 - Form design (automated: required, type, placeholder)
+    fe = p.form_inputs_extended
+    if not fe:
+        findings["ux_interaction"].append(_f("Skjemadesign", "Form design quality", "n/a", "Ingen skjemafelt", "No form fields"))
+    else:
+        issues = []
+        with_req = sum(1 for f in fe if f["required"])
+        with_ph = sum(1 for f in fe if f["placeholder"])
+        generic_type = sum(1 for f in fe if f["type"] == "text" and f["name"] and any(kw in f["name"].lower() for kw in ["email","phone","tel","date","number","url"]))
+        if with_req == 0 and len(fe) > 1:
+            issues.append("ingen required-attributter" if True else "no required attributes")
+        if generic_type > 0:
+            issues.append(f"{generic_type} felt med feil input-type")
+        st = "warn" if issues else "pass"
+        n = "; ".join(issues) if issues else f"{len(fe)} felt, {with_req} required, {with_ph} placeholder"
+        ne = f"{len(fe)} fields, {with_req} required, {with_ph} placeholder"
+        findings["ux_interaction"].append(_f("Skjemadesign", "Form design quality", st, n, ne,
+            rec="Bruk required, riktige input-typer og placeholder-tekst." if issues else "",
+            rec_en="Use required, correct input types, and placeholder text." if issues else ""))
+
+    # #22 - Mobile interaction design (subjective — needs rendering)
+    findings["ux_interaction"].append(_f("Mobil interaksjonsdesign", "Mobile interaction design", _ai(), "", "", automated=False))
+
+    # --- Cognitive Load & User Control (8 checks: #23-#30) ---
+
+    # #23-#26 Existing subjective checks → AI
+    for c, e in [("Minimal kompleksitet og valg","Minimal complexity and choices"),
+                 ("Gjenkjenning fremfor hukommelse","Recognition over recall"),
+                 ("Gruppert innhold og progressiv avsløring","Grouped content and progressive disclosure"),
+                 ("Konvensjoner og brukerkontroll","Conventions and user control")]:
+        findings["ux_cognitive"].append(_f(c, e, _ai(), "", "", automated=False))
+
+    # #27 - Users can accomplish primary task (subjective)
+    findings["ux_cognitive"].append(_f("Primæroppgave uten forvirring", "Primary task without confusion", _ai(), "", "", automated=False))
+
+    # #28 - Help and documentation (subjective)
+    findings["ux_cognitive"].append(_f("Hjelp og dokumentasjon tilgjengelig", "Help and documentation accessible", _ai(), "", "", automated=False))
+
+    # #29 - Trust signals (partially automated)
+    ts = p.trust_signals
+    if ts:
+        findings["ux_cognitive"].append(_f("Tillitssignaler til stede", "Trust signals present", "pass",
+            f"Funnet: {', '.join(ts)}", f"Found: {', '.join(ts)}",
+            detail="Klasser/roller med tillitssignal-nøkkelord funnet i HTML.", detail_en="Classes/roles with trust signal keywords found in HTML."))
+    else:
+        findings["ux_cognitive"].append(_f("Tillitssignaler til stede", "Trust signals present", _ai(),
+            "Ingen tillitssignaler funnet i HTML-klasser", "No trust signals found in HTML classes", automated=False))
+
+    # #30 - Onboarding (subjective)
+    findings["ux_cognitive"].append(_f("Onboarding/veiledning for nye brukere", "Onboarding or first-time user guidance", _ai(), "", "", automated=False))
 
     return findings
 
@@ -580,7 +759,8 @@ def run_ui_checks(p):
             ("Linjehøyde","Line height"),("Fontvekter","Font weights"),("Tekstjustering","Text alignment")]),
         ("ui_color", [("Konsistent fargepalett","Consistent color palette"),("Farge ikke eneste middel","Color not sole means"),
             ("Kontrastforhold","Contrast ratios"),("Merkefarger konsistent","Brand colors consistent"),("Hover/aktive farger","Hover/active colors")]),
-        ("ui_spacing", [("Konsistent mellomrom","Consistent spacing"),("Justering","Alignment"),("Responsivt layout","Responsive layout")]),
+        ("ui_spacing", [("Konsistent mellomrom","Consistent spacing"),("Justering","Alignment"),("Responsivt layout","Responsive layout"),
+            ("Tilstrekkelig padding","Adequate padding"),("Konsistente marginer","Consistent margins")]),
         ("ui_components", [("Knapper konsistent","Buttons consistent"),("Skjemafelt konsistent","Form fields consistent"),
             ("Ikoner konsistente","Icons consistent"),("Kort/containere","Cards/containers"),("Kantlinjer konsistente","Borders consistent")]),
     ]:
@@ -631,6 +811,12 @@ def run_ui_checks(p):
 
             findings[key].append(f)
 
+    # #36 - Content density balanced (subjective/visual)
+    findings["ui_hierarchy"].append(_f("Innholdstetthet balansert", "Content density balanced with breathing room", _ai(), "", "", automated=False))
+
+    # #57 - 404/error pages designed (cannot check from single page)
+    findings["ui_components"].append(_f("404/feilsider designet", "404 and error pages designed and helpful", _ai(), "", "", automated=False))
+
     return findings
 
 
@@ -660,7 +846,7 @@ def main():
     review = sum(1 for v in all_findings.values() for i in v if i["status"] == "NEEDS_AI_REVIEW")
 
     result = {
-        "pre_audit_version": "1.0.0",
+        "pre_audit_version": "1.1.0",
         "url": args.url,
         "summary": {"total_checks": total, "automated": auto, "needs_ai_review": review},
         "html_stats": {
