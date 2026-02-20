@@ -61,24 +61,26 @@ Progress is streamed to the client in real time via **Server-Sent Events (SSE)**
 ## Tech Stack
 
 **Backend**
+
 - Node.js (ES modules) + Express.js
 - Google Lighthouse + `chrome-launcher` — headless performance auditing
 - Anthropic Claude API (`@anthropic-ai/sdk`) — AI-powered evaluation
 - Python 3 — automated HTML parsing via subprocess
 
 **Frontend**
+
 - Vanilla HTML5 / CSS3 / JavaScript
 - Server-Sent Events for real-time progress streaming
 - Custom responsive UI with TRE Bergen brand identity
 
 **Key Libraries**
 
-| Package | Purpose |
-|---|---|
-| `express` | HTTP server and API routing |
-| `lighthouse` | Core Web Vitals + performance metrics |
-| `chrome-launcher` | Headless Chrome control |
-| `@anthropic-ai/sdk` | Claude API client |
+| Package             | Purpose                               |
+| ------------------- | ------------------------------------- |
+| `express`           | HTTP server and API routing           |
+| `lighthouse`        | Core Web Vitals + performance metrics |
+| `chrome-launcher`   | Headless Chrome control               |
+| `@anthropic-ai/sdk` | Claude API client                     |
 
 ---
 
@@ -131,7 +133,7 @@ tre-site-audit/
 
 ## Proprietary Software — Restricted Use
 
-This software is the exclusive intellectual property of **TRE Bergen AS**. All source code, design, logic, and associated assets are proprietary and confidential.
+This software is the exclusive intellectual property of **TRE Bergen**. All source code, design, logic, and associated assets are proprietary.
 
 This tool is developed solely for internal use by TRE Bergen and is not licensed, distributed, or made available for use by any third party. Unauthorised use, reproduction, modification, or distribution of any part of this codebase is strictly prohibited.
 
