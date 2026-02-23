@@ -1,9 +1,26 @@
 /**
  * TRE Bergen Website Audit — Express Server
  *
+ * Entry point for the application. Coordinates the full audit pipeline:
+ * receives a URL and Claude API key from the user, runs all analysis steps
+ * in order, and streams live progress back to the browser via Server-Sent
+ * Events (SSE).
+ *
+ * Audit pipeline (POST /api/audit):
+ *   1. In parallel: Lighthouse (desktop + mobile), HTML fetch, sitemap analysis
+ *   2. Fetch all external CSS and JS files (preAudit.js → assetFetcher.js)
+ *   3. Run Python pre-audit: ~55–60 deterministic checks on HTML + CSS + JS
+ *   4. Run Claude audit: AI evaluates the remaining ~40–45 visual/subjective criteria
+ *   5. Build HTML report: merge all results and render the final report
+ *
  * Endpoints:
- *   GET  /              → Landing page
- *   POST /api/audit     → SSE stream that runs the full audit
+ *   GET  /              → Serves the landing page (public/index.html)
+ *   POST /api/audit     → SSE stream that runs the full audit pipeline
+ *
+ * SSE event types sent to the client:
+ *   { type: 'progress', step, message_no, message_en }  — progress update
+ *   { type: 'complete', report }                        — final HTML report
+ *   { type: 'error',   message_no, message_en }         — error message
  */
 
 import express from 'express';
@@ -86,7 +103,7 @@ app.post('/api/audit', async (req, res) => {
 
     send('progress', { step: 4, message_no: 'AI-evaluering fullført. Genererer rapport...', message_en: 'AI evaluation complete. Generating report...' });
 
-    // Step 3: Build HTML report
+    // Step 4: Build HTML report
     const reportHtml = buildReport(pageSpeedData, claudeData, targetUrl.href);
 
     send('complete', { report: reportHtml });
