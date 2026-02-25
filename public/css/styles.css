@@ -38,6 +38,8 @@
   --font-body:
     "brockmannmedium", "Century Gothic", "CenturyGothic", "AppleGothic",
     sans-serif;
+  --font-size-logo: clamp(3.5rem, 18vw, 10rem);
+  --font-size-h1: clamp(1.75rem, 6vw, 3rem);
 }
 
 /* =====================================================================
@@ -96,7 +98,7 @@ body {
 
 .logo-tre {
   font-family: var(--font-heading);
-  font-size: 10rem;
+  font-size: var(--font-size-logo);
   font-weight: 500;
   line-height: 0.85;
   letter-spacing: 0.05em;
@@ -137,7 +139,7 @@ body {
 
 .landing h1 {
   font-family: var(--font-heading);
-  font-size: 3rem;
+  font-size: var(--font-size-h1);
   font-weight: 500;
   line-height: 1.15;
   margin-bottom: 0.5rem;
@@ -535,4 +537,50 @@ body {
   height: 46px;
   width: auto;
   filter: brightness(0) invert(1);
+}
+
+/* =====================================================================
+   RESPONSIVE — MOBIL (≤ 480px)
+   Layout-justeringer for små skjermer
+   ===================================================================== */
+@media (max-width: 480px) {
+  :root {
+    --font-size-logo: 3rem;
+  }
+
+  .landing-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+  }
+
+  .landing {
+    padding: 1.25rem;
+    padding-top: 0;
+  }
+
+  .form-card {
+    padding: 1.5rem;
+  }
+
+  .loading-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .report-actions {
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .report-actions > div {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    text-align: center;
+  }
 }
