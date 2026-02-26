@@ -191,6 +191,7 @@ function showReport() {
   // Skjul lasting og vis rapport
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("reportView").classList.remove("hidden");
+  document.getElementById("siteFooter").style.display = "none";
 
   // Last rapporten inn i iframe
   const iframe = document.getElementById("reportFrame");
