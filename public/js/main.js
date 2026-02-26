@@ -145,7 +145,7 @@ async function startAudit(e) {
    Updates the progress bar and step indicators
    ===================================================================== */
 function updateProgress(step) {
-  // Definer prosentandel for hvert steg
+  // Define percentage for each step
   const pcts = { 1: 15, 2: 30, 3: 70, 4: 90 };
   document.getElementById("progressBar").style.width = (pcts[step] || 0) + "%";
 

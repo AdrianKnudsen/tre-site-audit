@@ -1,12 +1,12 @@
 /* =====================================================================
    TRE BERGEN - LANDING PAGE STYLES
-   Stilark for landing-siden, loading-visningen og rapportcontaineren
-   Brukes av: public/index.html
+   Styles for the landing page, loading view, and report container
+   Used by: public/index.html
    ===================================================================== */
 
 /* =====================================================================
-   CSS VARIABLER (Design tokens)
-   Globale farger og typografi som brukes i hele applikasjonen
+   CSS VARIABLES (Design tokens)
+   Global colors and typography used throughout the application
    ===================================================================== */
 
 :root {
@@ -44,7 +44,7 @@
 
 /* =====================================================================
    GLOBAL RESET & BASE STYLES
-   Nullstiller default nettleserstiler og setter grunnleggende styling
+   Resets default browser styles and sets base styling
    ===================================================================== */
 * {
   margin: 0;
@@ -63,7 +63,7 @@ body {
 
 /* =====================================================================
    LANDING PAGE
-   Hovedsiden hvor brukeren fyller inn URL og API-nøkkel
+   Main page where the user fills in the URL and API key
    ===================================================================== */
 .landing {
   flex: 1;
@@ -79,7 +79,7 @@ body {
   display: none;
 }
 
-/* Logo og hovedoverskrift */
+/* Logo and main heading */
 .logo-text {
   font-family: var(--font-heading);
   font-size: 2rem;
@@ -156,8 +156,8 @@ body {
 }
 
 /* =====================================================================
-   SKJEMA-KOMPONENTENE
-   Input-felt, labels og submit-knapp
+   FORM COMPONENTS
+   Input fields, labels and submit button
    ===================================================================== */
 .form-card {
   background: var(--color-gray-50);
@@ -205,14 +205,14 @@ body {
   border-color: var(--color-dark-green);
 }
 
-/* Hjelpetekst under input-felt */
+/* Helper text below input fields */
 .form-group .hint {
   font-size: 0.8rem;
   color: var(--color-gray-600);
   margin-top: 0.3rem;
 }
 
-/* Submit-knapp */
+/* Submit button */
 .btn-audit {
   width: 100%;
   padding: 0.9rem;
@@ -245,7 +245,7 @@ body {
 
 /* =====================================================================
    LOADING STATE
-   Vises mens revisjonen pågår med progresjonsindikatorer
+   Displayed while the audit is in progress with progress indicators
    ===================================================================== */
 .loading-view {
   flex: 1;
@@ -295,7 +295,7 @@ body {
   color: var(--color-dark-green);
 }
 
-/* Progresjonslinje */
+/* Progress bar */
 .progress-bar-track {
   width: 100%;
   height: 8px;
@@ -326,7 +326,7 @@ body {
   color: var(--color-dark-green);
 }
 
-/* Stegindikator med ikoner og tekst */
+/* Step indicator with icons and text */
 .progress-steps {
   text-align: left;
 }
@@ -341,18 +341,18 @@ body {
   transition: color 0.3s;
 }
 
-/* Aktivt steg */
+/* Active step */
 .progress-step.active {
   color: var(--color-dark-green);
   font-weight: 600;
 }
 
-/* Fullførte steg */
+/* Completed steps */
 .progress-step.done {
   color: var(--color-dark-green);
 }
 
-/* Steg-ikon (nummer eller checkmark) */
+/* Step icon (number or checkmark) */
 .step-icon {
   width: 24px;
   height: 24px;
@@ -377,7 +377,7 @@ body {
   color: var(--color-white);
 }
 
-/* Pulserende animasjon for aktivt steg */
+/* Pulsing animation for active step */
 @keyframes pulse {
   0%,
   100% {
@@ -429,7 +429,7 @@ body {
 
 /* =====================================================================
    ERROR STATE
-   Viser feilmeldinger til brukeren
+   Displays error messages to the user
    ===================================================================== */
 .error-banner {
   background: rgba(239, 68, 68, 0.1);
@@ -448,7 +448,7 @@ body {
 
 /* =====================================================================
    REPORT VIEW
-   Viser den genererte revisjonsrapporten i en iframe
+   Displays the generated audit report in an iframe
    ===================================================================== */
 .report-view {
   width: 100%;
@@ -458,7 +458,7 @@ body {
   display: none;
 }
 
-/* Handlingsknapper over rapporten */
+/* Action buttons above the report */
 .report-actions {
   background: var(--color-lime);
   padding: 1rem 2.5rem;
@@ -496,7 +496,7 @@ body {
   background: var(--color-dark-green-light);
 }
 
-/* Iframe som viser rapporten */
+/* Iframe that displays the report */
 .report-frame {
   width: 100%;
   border: none;
@@ -505,7 +505,7 @@ body {
 
 /* =====================================================================
    FOOTER
-   Bunntekst med logo og nettadresse
+   Footer with logo and website address
    ===================================================================== */
 .site-footer {
   background: var(--color-dark-green);
@@ -540,8 +540,8 @@ body {
 }
 
 /* =====================================================================
-   RESPONSIVE — MOBIL (≤ 480px)
-   Layout-justeringer for små skjermer
+   RESPONSIVE — MOBILE (≤ 480px)
+   Layout adjustments for small screens
    ===================================================================== */
 @media (max-width: 480px) {
   :root {

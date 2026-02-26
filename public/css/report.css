@@ -939,7 +939,7 @@ p {
   }
 }
 
-/* ===== Responsive — Mobil (≤ 480px) ===== */
+/* ===== Responsive — Mobile (≤ 480px) ===== */
 @media (max-width: 480px) {
   :root {
     --font-size-logo: 3rem;
