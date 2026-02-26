@@ -38,7 +38,7 @@ User submits URL + Anthropic API key
     with @import resolution)
               │
               ▼
-   Automated pre-audit (Python v2.0)
+   Automated pre-audit (Python)
    ~55–60 deterministic checks
    (alt text, heading hierarchy,
     ARIA, meta tags, HTTPS,
@@ -95,7 +95,7 @@ Progress is streamed to the client in real time via **Server-Sent Events (SSE)**
 
 - **101-point evaluation** across UX, UI, Accessibility, and Best Practices
 - **Lighthouse integration** — performance, SEO, and accessibility scores for desktop and mobile, including Core Web Vitals (FCP, LCP, CLS, TBT)
-- **Full asset analysis** — fetches all external CSS and JS files for deeper automated inspection (v2.0)
+- **Full asset analysis** — fetches all external CSS and JS files for deeper automated inspection
 - **Sitemap analysis** — parses sitemap.xml to assess URL depth and 3-click rule compliance
 - **AI visual audit** — Claude assesses design quality, layout, and experiential factors that automated tools cannot
 - **Token-efficient prompting** — pre-audit results are passed to Claude so it only evaluates the remaining ~40–45 visual/subjective checks
@@ -121,7 +121,7 @@ tre-site-audit/
 │   ├── claudeAudit.js         # Claude API client, token budgeting, result merger
 │   └── reportBuilder.js       # HTML report renderer
 ├── claude-skill/
-│   ├── pre-audit.py           # Automated 101-criteria HTML/CSS/JS checker (v2.0)
+│   ├── pre-audit.py           # Deterministic HTML/CSS/JS checker (~55–60 automated checks)
 │   ├── audit-criteria.md      # Full 101-point checklist with Nielsen references
 │   ├── site-audit.md          # Legacy Claude Code skill command definition
 │   ├── SKILL.md               # Architecture and integration documentation

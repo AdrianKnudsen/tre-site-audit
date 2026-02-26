@@ -1,12 +1,12 @@
 /* =====================================================================
-   TRE BERGEN - NETTSTEDSREVISJON HOVEDSCRIPT
-   Håndterer skjemainnsending, API-kommunikasjon og visning av rapport
+   TRE BERGEN - WEBSITE AUDIT MAIN SCRIPT
+   Handles form submission, API communication, and report rendering
    ===================================================================== */
 
 /* =====================================================================
    GLOBAL STATE
    ===================================================================== */
-let reportHtml = ""; // Lagrer den genererte HTML-rapporten
+let reportHtml = ""; // Stores the generated HTML report
 let etaInterval = null; // Interval for ETA countdown
 let funFactInterval = null; // Interval for rotating fun facts
 let step3MessageInterval = null; // Interval for rotating Step 3 messages
@@ -22,7 +22,7 @@ const STEP_DURATIONS = {
   4: 5, // Report generation
 };
 
-// Fun facts about web development history (in Norwegian)
+// Fun facts about web development history
 const FUN_FACTS = [
   "Visste du at den første nettsiden ble publisert 6. august 1991?",
   "HTML sto opprinnelig for HyperText Markup Language, laget av Tim Berners-Lee",
@@ -55,34 +55,34 @@ let currentFactIndex = 0;
 let currentStep3MessageIndex = 0;
 
 /* =====================================================================
-   HOVEDFUNKSJON: START REVISJON
-   Starter revisjonsprosessen når brukeren sender inn skjemaet
+   MAIN FUNCTION: START AUDIT
+   Starts the audit process when the user submits the form
    ===================================================================== */
 async function startAudit(e) {
   e.preventDefault();
 
-  // Hent verdier fra skjemaet
+  // Get values from the form
   const url = document.getElementById("urlInput").value.trim();
   const apiKey = document.getElementById("apiKeyInput").value.trim();
   const errorBanner = document.getElementById("errorBanner");
   const submitBtn = document.getElementById("submitBtn");
 
-  // Skjul eventuelle tidligere feilmeldinger
+  // Hide any previous error messages
   errorBanner.classList.remove("visible");
 
-  // Valider input
+  // Validate input
   if (!url || !apiKey) {
     errorBanner.textContent = "Fyll inn både URL og API-nøkkel.";
     errorBanner.classList.add("visible");
     return;
   }
 
-  // Bytt til lasting-visning
+  // Switch to loading view
   document.getElementById("landing").classList.add("hidden");
   document.getElementById("loading").classList.remove("hidden");
   submitBtn.disabled = true;
 
-  // Nullstill progresjonsindikatorer
+  // Reset progress indicators
   for (let i = 1; i <= 4; i++) {
     document.getElementById(`step${i}`).className = "progress-step";
   }
@@ -96,7 +96,7 @@ async function startAudit(e) {
   initializeLoadingExperience();
 
   try {
-    // Send POST-request til backend API
+    // Send POST request to backend API
     const response = await fetch("/api/audit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -108,22 +108,22 @@ async function startAudit(e) {
     const decoder = new TextDecoder();
     let buffer = "";
 
-    // Les stream kontinuerlig
+    // Read stream continuously
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      // Dekod og parse data
+      // Decode and parse data
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split("\n");
-      buffer = lines.pop(); // Behold ufullstendig linje i buffer
+      buffer = lines.pop(); // Keep incomplete line in buffer
 
-      // Prosesser hver fullstendige linje
+      // Process each complete line
       for (const line of lines) {
         if (!line.startsWith("data: ")) continue;
         const data = JSON.parse(line.substring(6));
 
-        // Håndter ulike event-typer
+        // Handle different event types
         if (data.type === "progress") {
           updateProgress(data.step);
         } else if (data.type === "complete") {
@@ -135,14 +135,14 @@ async function startAudit(e) {
       }
     }
   } catch (err) {
-    // Håndter nettverksfeil
+    // Handle network errors
     showError(`Nettverksfeil: ${err.message}`);
   }
 }
 
 /* =====================================================================
-   PROGRESJONSHÅNDTERING
-   Oppdaterer progresjonslinje og steg-indikatorer
+   PROGRESS HANDLING
+   Updates the progress bar and step indicators
    ===================================================================== */
 function updateProgress(step) {
   // Definer prosentandel for hvert steg
@@ -154,15 +154,15 @@ function updateProgress(step) {
   stepStartTime = Date.now();
   calculateETA();
 
-  // Oppdater visuelle tilstander for alle steg
+  // Update visual states for all steps
   for (let i = 1; i <= 4; i++) {
     const el = document.getElementById(`step${i}`);
     if (i < step) {
-      // Fullførte steg
+      // Completed steps
       el.className = "progress-step done";
       el.querySelector(".step-icon").innerHTML = "✓";
     } else if (i === step) {
-      // Aktivt steg
+      // Active step
       el.className = "progress-step active";
     }
   }
@@ -175,88 +175,88 @@ function updateProgress(step) {
     // Reset step 3 text to default if we moved past it
     if (step > 3) {
       document.getElementById("step3Text").textContent =
-        "AI analyserer 87 kriterier...";
+        "AI is analyzing 87 criteria...";
     }
   }
 }
 
 /* =====================================================================
-   RAPPORTVISNING
-   Viser den genererte rapporten i en iframe
+   REPORT VIEW
+   Displays the generated report in an iframe
    ===================================================================== */
 function showReport() {
   // Clean up intervals
   stopLoadingExperience();
 
-  // Skjul lasting og vis rapport
+  // Hide loading and show report
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("reportView").classList.remove("hidden");
   document.getElementById("siteFooter").style.display = "none";
 
-  // Last rapporten inn i iframe
+  // Load the report into iframe
   const iframe = document.getElementById("reportFrame");
   iframe.srcdoc = reportHtml;
 
-  // Auto-tilpass iframe-høyde til innhold
+  // Auto-adjust iframe height to content
   iframe.onload = () => {
     try {
       const height = iframe.contentDocument.body.scrollHeight;
       iframe.style.height = height + 50 + "px";
     } catch (e) {
-      // Fallback hvis ikke tilgang til iframe-innhold
+      // Fallback if no access to iframe content
       iframe.style.height = "5000px";
     }
   };
 }
 
 /* =====================================================================
-   FEILHÅNDTERING
-   Viser feilmeldinger til brukeren
+   ERROR HANDLING
+   Displays error messages to the user
    ===================================================================== */
 function showError(message) {
   // Clean up intervals
   stopLoadingExperience();
 
-  // Skjul lasting og vis landing igjen
+  // Hide loading and show landing again
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("landing").classList.remove("hidden");
   document.getElementById("siteFooter").style.display = "";
   document.getElementById("submitBtn").disabled = false;
 
-  // Vis feilmelding
+  // Show error message
   const errorBanner = document.getElementById("errorBanner");
   errorBanner.textContent = message;
   errorBanner.classList.add("visible");
 }
 
 /* =====================================================================
-   NAVIGASJON
-   Gå tilbake til skjemaet fra rapportvisningen
+   NAVIGATION
+   Go back to the form from the report view
    ===================================================================== */
 function goBack() {
-  // Skjul rapport og vis landing
+  // Hide report and show landing
   document.getElementById("reportView").classList.add("hidden");
   document.getElementById("landing").classList.remove("hidden");
   document.getElementById("siteFooter").style.display = "";
   document.getElementById("submitBtn").disabled = false;
 
-  // Tøm lagret rapport
+  // Clear stored report
   reportHtml = "";
 }
 
 /* =====================================================================
-   NEDLASTING
-   Last ned rapporten som HTML-fil
+   DOWNLOAD
+   Download the report as an HTML file
    ===================================================================== */
 function downloadReport() {
   if (!reportHtml) return;
 
-  // Opprett blob og download-link
+  // Create blob and download link
   const blob = new Blob([reportHtml], { type: "text/html" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
 
-  // Generer filnavn basert på URL-input
+  // Generate filename based on URL input
   const urlInput = document.getElementById("urlInput").value;
   const domain = urlInput
     .replace(/https?:\/\//, "")
@@ -264,14 +264,14 @@ function downloadReport() {
     .replace(/-+$/, "");
   a.download = `audit-${domain}.html`;
 
-  // Trigger nedlasting og rydd opp
+  // Trigger download and clean up
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
 /* =====================================================================
-   UTSKRIFT
-   Skriv ut rapporten via iframe
+   PRINT
+   Print the report via iframe
    ===================================================================== */
 function printReport() {
   const iframe = document.getElementById("reportFrame");
@@ -340,7 +340,7 @@ function calculateETA() {
 function updateETADisplay() {
   const etaText = document.getElementById("etaText");
   if (etaSecondsRemaining <= 0) {
-    etaText.textContent = "Fullører snart...";
+    etaText.textContent = "Fullfører snart...";
   } else {
     etaText.textContent = `Estimert tid: ~${etaSecondsRemaining} sekunder`;
   }
