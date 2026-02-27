@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="no">
   <head>
-    <!-- Metadata og grunnleggende innstillinger -->
+    <!-- Metadata and basic settings -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nettstedsrevisjon — TRE Bergen</title>
@@ -10,13 +10,12 @@
     <!-- Fonts: Brockmann -->
     <link rel="stylesheet" href="./fonts/stylesheet.css" />
 
-    <!-- Hovedstilark -->
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
     <!-- =================================================================
          LANDING PAGE
-         Hovedsiden hvor brukeren fyller inn URL og API-nøkkel
+         The main page where the user enters the URL and API key
          ================================================================= -->
     <div class="landing" id="landing">
       <!-- Logo header at top-left -->
@@ -36,51 +35,51 @@
           praksis — drevet av AI.
         </p>
 
-        <!-- Innsendingsskjema -->
+        <!-- Submission form -->
         <div class="form-card">
-        <form id="auditForm" onsubmit="startAudit(event)">
-          <!-- URL-input -->
-          <div class="form-group">
-            <label for="urlInput">Nettadresse</label>
-            <input
-              type="text"
-              id="urlInput"
-              placeholder="https://example.com"
-              required
-              autocomplete="url"
-            />
-          </div>
-
-          <!-- API-nøkkel input -->
-          <div class="form-group">
-            <label for="apiKeyInput">Anthropic API-nøkkel</label>
-            <input
-              type="password"
-              id="apiKeyInput"
-              placeholder="sk-ant-..."
-              required
-            />
-            <div class="hint">
-              Nøkkelen sendes kun til Anthropic for AI-evaluering. Den lagres
-              ikke.
+          <form id="auditForm" onsubmit="startAudit(event)">
+            <!-- URL input -->
+            <div class="form-group">
+              <label for="urlInput">Nettadresse</label>
+              <input
+                type="text"
+                id="urlInput"
+                placeholder="https://example.com"
+                required
+                autocomplete="url"
+              />
             </div>
-          </div>
 
-          <!-- Submit-knapp -->
-          <button type="submit" class="btn-audit" id="submitBtn">
-            Start revisjon
-          </button>
-        </form>
+            <!-- API key input -->
+            <div class="form-group">
+              <label for="apiKeyInput">Anthropic API-nøkkel</label>
+              <input
+                type="password"
+                id="apiKeyInput"
+                placeholder="sk-ant-..."
+                required
+              />
+              <div class="hint">
+                Nøkkelen sendes kun til Anthropic for AI-evaluering. Den lagres
+                ikke.
+              </div>
+            </div>
 
-        <!-- Feilmeldingsbanner (skjult som standard) -->
-        <div class="error-banner" id="errorBanner"></div>
+            <!-- Submit button -->
+            <button type="submit" class="btn-audit" id="submitBtn">
+              Start revisjon
+            </button>
+          </form>
+
+          <!-- Error banner (hidden by default) -->
+          <div class="error-banner" id="errorBanner"></div>
         </div>
       </div>
     </div>
 
     <!-- =================================================================
          LOADING VIEW
-         Vises mens revisjonen pågår med progresjonsindikatorer
+         Shown while the audit is running with progress indicators
          ================================================================= -->
     <div class="loading-view hidden" id="loading">
       <!-- Logo header at top-left -->
@@ -95,44 +94,44 @@
       <!-- Loading content centered -->
       <div class="loading-content">
         <div class="loading-card">
-        <h2>Revisjon pågår...</h2>
+          <h2>Revisjon pågår...</h2>
 
-        <!-- Progresjonslinje -->
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" id="progressBar"></div>
-        </div>
-
-        <!-- ETA Display -->
-        <div class="eta-display" id="etaDisplay">
-          <span id="etaText">Estimert tid: ~93 sekunder</span>
-        </div>
-
-        <!-- Steg-for-steg indikator -->
-        <div class="progress-steps">
-          <!-- Steg 1: PageSpeed Insights -->
-          <div class="progress-step" id="step1">
-            <div class="step-icon">1</div>
-            <span>Henter PageSpeed Insights-data...</span>
+          <!-- Progress bar -->
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressBar"></div>
           </div>
 
-          <!-- Steg 2: HTML-henting -->
-          <div class="progress-step" id="step2">
-            <div class="step-icon">2</div>
-            <span>Henter sidens HTML...</span>
+          <!-- ETA Display -->
+          <div class="eta-display" id="etaDisplay">
+            <span id="etaText">Estimert tid: ~93 sekunder</span>
           </div>
 
-          <!-- Steg 3: AI-analyse -->
-          <div class="progress-step" id="step3">
-            <div class="step-icon">3</div>
-            <span id="step3Text">AI analyserer 87 kriterier...</span>
-          </div>
+          <!-- Step-by-step indicator -->
+          <div class="progress-steps">
+            <!-- Step 1: PageSpeed Insights -->
+            <div class="progress-step" id="step1">
+              <div class="step-icon">1</div>
+              <span>Henter PageSpeed Insights-data...</span>
+            </div>
 
-          <!-- Steg 4: Rapportgenerering -->
-          <div class="progress-step" id="step4">
-            <div class="step-icon">4</div>
-            <span>Genererer rapport...</span>
+            <!-- Step 2: HTML fetch -->
+            <div class="progress-step" id="step2">
+              <div class="step-icon">2</div>
+              <span>Henter sidens HTML...</span>
+            </div>
+
+            <!-- Step 3: AI analysis -->
+            <div class="progress-step" id="step3">
+              <div class="step-icon">3</div>
+              <span id="step3Text">AI analyserer 87 kriterier...</span>
+            </div>
+
+            <!-- Step 4: Report generation -->
+            <div class="progress-step" id="step4">
+              <div class="step-icon">4</div>
+              <span>Genererer rapport...</span>
+            </div>
           </div>
-        </div>
         </div>
 
         <!-- Fun Facts Section -->
@@ -146,15 +145,15 @@
 
     <!-- =================================================================
          REPORT VIEW
-         Viser den genererte revisjonsrapporten
+         Displays the generated audit report
          ================================================================= -->
     <div class="report-view hidden" id="reportView">
-      <!-- Handlingsknapper over rapporten -->
+      <!-- Action buttons above the report -->
       <div class="report-actions">
-        <!-- Tilbake-knapp -->
+        <!-- Back button -->
         <button class="btn" onclick="goBack()">← Ny revisjon</button>
 
-        <!-- Eksportknapper -->
+        <!-- Export buttons -->
         <div>
           <button class="btn" onclick="printReport()">Skriv ut</button>
           <button class="btn btn-primary" onclick="downloadReport()">
@@ -163,7 +162,7 @@
         </div>
       </div>
 
-      <!-- Iframe som viser rapporten -->
+      <!-- Iframe displaying the report -->
       <iframe
         class="report-frame"
         id="reportFrame"
@@ -173,18 +172,24 @@
 
     <!-- =================================================================
          FOOTER
-         Bunntekst med logo og nettadresse
+         Footer with logo and website address
          ================================================================= -->
     <div class="site-footer" id="siteFooter">
       <div class="footer-text">
-        <a href="https://trebergen.no" target="_blank" rel="noopener noreferrer">trebergen.no</a>
+        <a href="https://trebergen.no" target="_blank" rel="noopener noreferrer"
+          >trebergen.no</a
+        >
       </div>
       <div>
-        <img class="footer-logo-img" src="./images/TreLogo.svg" alt="TRE Bergen">
+        <img
+          class="footer-logo-img"
+          src="./images/TreLogo.svg"
+          alt="TRE Bergen"
+        />
       </div>
     </div>
 
-    <!-- Hovedscript for applikasjonens funksjonalitet -->
+    <!-- Main script for application functionality -->
     <script src="./js/main.js"></script>
   </body>
 </html>
