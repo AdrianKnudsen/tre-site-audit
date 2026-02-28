@@ -73,8 +73,23 @@ app.post('/api/audit', async (req, res) => {
     // Step 1: Fetch PageSpeed data + page HTML in parallel
     send('progress', { step: 1, message_no: 'Henter PageSpeed Insights-data (desktop + mobil)...', message_en: 'Fetching PageSpeed Insights data (desktop + mobile)...' });
 
+    const emptyLighthouseResult = () => ({
+      scores: { performance: 0, accessibility: 0, bestPractices: 0, seo: 0 },
+      metrics: {
+        fcp: { value: 0, displayValue: 'N/A', score: null },
+        lcp: { value: 0, displayValue: 'N/A', score: null },
+        tbt: { value: 0, displayValue: 'N/A', score: null },
+        cls: { value: 0, displayValue: 'N/A', score: null },
+        si:  { value: 0, displayValue: 'N/A', score: null },
+      },
+      failingAudits: [],
+    });
+
     const [pageSpeedData, pageHtml, sitemapData] = await Promise.all([
-      getPageSpeedData(targetUrl.href),
+      getPageSpeedData(targetUrl.href).catch(err => {
+        console.warn('[Lighthouse] Failed, continuing without scores:', err.message);
+        return { desktop: emptyLighthouseResult(), mobile: emptyLighthouseResult() };
+      }),
       fetchPageHtml(targetUrl.href),
       analyzeSitemap(targetUrl.href).catch(err => {
         console.warn('[Sitemap] Analysis failed:', err.message);
