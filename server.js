@@ -7,9 +7,9 @@
  * Events (SSE).
  *
  * Audit pipeline (POST /api/audit):
- *   1. In parallel: Lighthouse (desktop + mobile), HTML fetch, sitemap analysis
+ *   1. In parallel: PageSpeed Insights API (desktop + mobile), HTML fetch, sitemap analysis
  *   2. Fetch all external CSS and JS files (preAudit.js → assetFetcher.js)
- *   3. Run Python pre-audit: ~55–60 deterministic checks on HTML + CSS + JS
+ *   3. Run JavaScript pre-audit: ~55–60 deterministic checks on HTML + CSS + JS
  *   4. Run Claude audit: AI evaluates the remaining ~40–45 visual/subjective criteria
  *   5. Build HTML report: merge all results and render the final report
  *
@@ -87,7 +87,7 @@ app.post('/api/audit', async (req, res) => {
 
     const [pageSpeedData, pageHtml, sitemapData] = await Promise.all([
       getPageSpeedData(targetUrl.href).catch(err => {
-        console.warn('[Lighthouse] Failed, continuing without scores:', err.message);
+        console.warn('[PSI] Failed, continuing without scores:', err.message);
         return { desktop: emptyLighthouseResult(), mobile: emptyLighthouseResult() };
       }),
       fetchPageHtml(targetUrl.href),
@@ -134,7 +134,12 @@ app.post('/api/audit', async (req, res) => {
   }
 });
 
-// ===== Start server =====
-app.listen(PORT, () => {
-  console.log(`\n  TRE Bergen Site Audit running at http://localhost:${PORT}\n`);
-});
+// ===== Start server (local dev) =====
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`\n  TRE Bergen Site Audit running at http://localhost:${PORT}\n`);
+  });
+}
+
+// Export for Vercel serverless
+export default app;
