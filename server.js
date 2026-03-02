@@ -26,12 +26,45 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Anthropic from '@anthropic-ai/sdk';
 import { getPageSpeedData } from './lib/pagespeed.js';
 import { fetchPageHtml } from './lib/fetchPage.js';
 import { runPreAudit } from './lib/preAudit.js';
 import { runClaudeAudit } from './lib/claudeAudit.js';
-import { buildReport } from './lib/reportBuilder.js';
+import { buildReport, LH_TITLES_NO } from './lib/reportBuilder.js';
 import { analyzeSitemap } from './lib/sitemapAnalyzer.js';
+
+// Auto-translate PageSpeed audit IDs that are missing from our Norwegian dictionary
+async function translateMissingAudits(failingAudits, apiKey) {
+  const seenIds = new Set();
+  const missing = [];
+  for (const a of failingAudits) {
+    if (!seenIds.has(a.id) && !LH_TITLES_NO[a.id]) {
+      seenIds.add(a.id);
+      missing.push({ id: a.id, title: a.title });
+    }
+  }
+  if (missing.length === 0) return {};
+
+  try {
+    const anthropic = new Anthropic({ apiKey });
+    const auditList = missing.map(a => `"${a.id}": "${a.title}"`).join('\n');
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: `Translate these Google Lighthouse audit IDs and titles to Norwegian bokmål. Return ONLY valid JSON with no extra text:\n{\n  "audit-id": { "title": "Kort norsk tittel (maks 8 ord)", "description": "Kort norsk beskrivelse av problemet (maks 20 ord)." }\n}\n\nAudits:\n${auditList}`,
+      }],
+    });
+    const text = response.content[0]?.text || '';
+    const match = text.match(/\{[\s\S]*\}/);
+    return match ? JSON.parse(match[0]) : {};
+  } catch (e) {
+    console.warn('[Translation] Auto-translation failed:', e.message);
+    return {};
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -111,15 +144,22 @@ app.post('/api/audit', async (req, res) => {
       preAuditData.sitemapAnalysis = sitemapData;
     }
 
-    // Step 3: Run Claude audit (only visual/subjective checks)
+    // Step 3: Run Claude audit + auto-translate missing audit IDs in parallel
     send('progress', { step: 3, message_no: 'Claude evaluerer visuelle og subjektive kriterier...', message_en: 'Claude evaluating visual and subjective criteria...' });
 
-    const claudeData = await runClaudeAudit(pageHtml, targetUrl.href, apiKey, preAuditData);
+    const allFailingAudits = [
+      ...(pageSpeedData.desktop.failingAudits || []),
+      ...(pageSpeedData.mobile.failingAudits || []),
+    ];
+    const [claudeData, extraTranslations] = await Promise.all([
+      runClaudeAudit(pageHtml, targetUrl.href, apiKey, preAuditData),
+      translateMissingAudits(allFailingAudits, apiKey),
+    ]);
 
     send('progress', { step: 4, message_no: 'AI-evaluering fullført. Genererer rapport...', message_en: 'AI evaluation complete. Generating report...' });
 
     // Step 4: Build HTML report
-    const reportHtml = buildReport(pageSpeedData, claudeData, targetUrl.href);
+    const reportHtml = buildReport(pageSpeedData, claudeData, targetUrl.href, extraTranslations);
 
     send('complete', { report: reportHtml });
 
