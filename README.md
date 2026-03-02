@@ -13,7 +13,7 @@ TRE Site Audit evaluates websites across **101 criteria** spanning four domains:
 - **Accessibility** — WCAG 2.1 compliance, semantic HTML, ARIA, keyboard navigation
 - **Best Practices** — SEO, security headers, meta tags, performance hygiene
 
-The tool uses a hybrid approach: deterministic automated checks for objective criteria (~55–60 checks handled by Python), and Claude (Anthropic's AI) for subjective visual and experiential evaluation (~40–45 checks). Results are combined into a bilingual (Norwegian/English) HTML report, complete with Lighthouse performance metrics and a prioritised list of recommended fixes.
+The tool uses a hybrid approach: deterministic automated checks for objective criteria (~55–60 checks handled by JavaScript), and Claude (Anthropic's AI) for subjective visual and experiential evaluation (~40–45 checks). Results are combined into a bilingual (Norwegian/English) HTML report, complete with Google PageSpeed Insights performance metrics and a prioritised list of recommended fixes.
 
 ---
 
@@ -25,9 +25,8 @@ User submits URL + Anthropic API key
           ▼
 ┌─────────────────────────────┐
 │  Parallel data collection   │
-│  ├─ Lighthouse (desktop +   │
-│  │   mobile) via headless   │
-│  │   Chrome                 │
+│  ├─ PageSpeed Insights API  │
+│  │   (desktop + mobile)     │
 │  ├─ Raw HTML fetch          │
 │  └─ Sitemap analysis        │
 └─────────────┬───────────────┘
@@ -38,7 +37,7 @@ User submits URL + Anthropic API key
     with @import resolution)
               │
               ▼
-   Automated pre-audit (Python)
+   Automated pre-audit (JavaScript)
    ~55–60 deterministic checks
    (alt text, heading hierarchy,
     ARIA, meta tags, HTTPS,
@@ -54,7 +53,7 @@ User submits URL + Anthropic API key
               ▼
    Merge results → Build report
    (scores, findings, priority fixes,
-    Lighthouse metrics, bilingual notes)
+    PageSpeed metrics, bilingual notes)
               │
               ▼
    HTML report delivered to browser
@@ -70,9 +69,8 @@ Progress is streamed to the client in real time via **Server-Sent Events (SSE)**
 **Backend**
 
 - Node.js (ES modules) + Express.js
-- Google Lighthouse + `chrome-launcher` — headless performance auditing
+- Google PageSpeed Insights API — remote performance auditing (no Chrome dependency)
 - Anthropic Claude API (`@anthropic-ai/sdk`) — AI-powered evaluation
-- Python 3 — automated HTML/CSS/JS parsing via subprocess
 
 **Frontend**
 
@@ -82,19 +80,17 @@ Progress is streamed to the client in real time via **Server-Sent Events (SSE)**
 
 **Key Libraries**
 
-| Package             | Purpose                               |
-| ------------------- | ------------------------------------- |
-| `express`           | HTTP server and API routing           |
-| `lighthouse`        | Core Web Vitals + performance metrics |
-| `chrome-launcher`   | Headless Chrome control               |
-| `@anthropic-ai/sdk` | Claude API client                     |
+| Package             | Purpose                                      |
+| ------------------- | -------------------------------------------- |
+| `express`           | HTTP server and API routing                  |
+| `@anthropic-ai/sdk` | Claude API client                            |
 
 ---
 
 ## Features
 
 - **101-point evaluation** across UX, UI, Accessibility, and Best Practices
-- **Lighthouse integration** — performance, SEO, and accessibility scores for desktop and mobile, including Core Web Vitals (FCP, LCP, CLS, TBT)
+- **PageSpeed Insights integration** — performance, SEO, and accessibility scores for desktop and mobile, including Core Web Vitals (FCP, LCP, CLS, TBT)
 - **Full asset analysis** — fetches all external CSS and JS files for deeper automated inspection
 - **Sitemap analysis** — parses sitemap.xml to assess URL depth and 3-click rule compliance
 - **AI visual audit** — Claude assesses design quality, layout, and experiential factors that automated tools cannot
@@ -104,6 +100,7 @@ Progress is streamed to the client in real time via **Server-Sent Events (SSE)**
 - **Bilingual output** — reports in Norwegian (bokmål) and English
 - **Real-time streaming** — step-by-step progress via SSE
 - **Portable reports** — self-contained HTML, printable and downloadable
+- **No Chrome dependency** — runs on Vercel and any serverless platform
 
 ---
 
@@ -112,29 +109,39 @@ Progress is streamed to the client in real time via **Server-Sent Events (SSE)**
 ```
 tre-site-audit/
 ├── server.js                  # Express server, SSE endpoint, audit pipeline
+├── api/
+│   └── index.js               # Vercel serverless entry point
 ├── lib/
-│   ├── pagespeed.js           # Lighthouse runner (desktop + mobile)
+│   ├── pagespeed.js           # Google PageSpeed Insights API wrapper (desktop + mobile)
 │   ├── fetchPage.js           # Target page HTML fetcher
 │   ├── assetFetcher.js        # External CSS/JS fetcher with @import resolution
 │   ├── sitemapAnalyzer.js     # Sitemap parser for 3-click rule assessment
-│   ├── preAudit.js            # Python subprocess orchestration
+│   ├── preAudit.js            # Pre-audit orchestrator (assets → checks)
+│   ├── preAuditChecks.js      # Deterministic HTML/CSS/JS checker (~55–60 automated checks)
 │   ├── claudeAudit.js         # Claude API client, token budgeting, result merger
 │   └── reportBuilder.js       # HTML report renderer
-├── claude-skill/
-│   ├── pre-audit.py           # Deterministic HTML/CSS/JS checker (~55–60 automated checks)
-│   ├── audit-criteria.md      # Full 101-point checklist with Nielsen references
-│   ├── site-audit.md          # Legacy Claude Code skill command definition
-│   ├── SKILL.md               # Architecture and integration documentation
-│   └── README.md              # Overview of the claude-skill directory
 ├── public/
 │   ├── index.html             # Application UI
 │   ├── js/main.js             # Frontend state + SSE handling
 │   └── css/
 │       ├── styles.css         # Application styles
 │       └── report.css         # Report template styles
-└── templates/
-    └── report-template.html   # Report HTML structure
+├── templates/
+│   └── report-template.html   # Report HTML structure
+├── vercel.json                # Vercel deployment config
+└── .env.example               # Environment variable reference
 ```
+
+---
+
+## Environment Variables
+
+| Variable            | Required | Description                       |
+| ------------------- | -------- | --------------------------------- |
+| `PAGESPEED_API_KEY` | Yes      | Google PageSpeed Insights API key |
+| `PORT`              | No       | Server port (default: 3000)       |
+
+For local development, copy `.env.example` to `.env` and fill in your key. The `.env` file is gitignored and never committed.
 
 ---
 
