@@ -118,11 +118,16 @@ app.post('/api/audit', async (req, res) => {
       failingAudits: [],
     });
 
+    const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(targetUrl.hostname);
+    const psiPromise = isLocalhost
+      ? Promise.resolve({ desktop: emptyPSIResult(), mobile: emptyPSIResult() })
+      : getPageSpeedData(targetUrl.href).catch(err => {
+          console.warn('[PSI] Failed, continuing without scores:', err.message);
+          return { desktop: emptyPSIResult(), mobile: emptyPSIResult() };
+        });
+
     const [pageSpeedData, pageHtml, sitemapData] = await Promise.all([
-      getPageSpeedData(targetUrl.href).catch(err => {
-        console.warn('[PSI] Failed, continuing without scores:', err.message);
-        return { desktop: emptyPSIResult(), mobile: emptyPSIResult() };
-      }),
+      psiPromise,
       fetchPageHtml(targetUrl.href),
       analyzeSitemap(targetUrl.href).catch(err => {
         console.warn('[Sitemap] Analysis failed:', err.message);
@@ -159,7 +164,7 @@ app.post('/api/audit', async (req, res) => {
     send('progress', { step: 4, message_no: 'AI-evaluering fullført. Genererer rapport...', message_en: 'AI evaluation complete. Generating report...' });
 
     // Step 4: Build HTML report
-    const reportHtml = buildReport(pageSpeedData, claudeData, targetUrl.href, extraTranslations);
+    const reportHtml = buildReport(pageSpeedData, claudeData, targetUrl.href, extraTranslations, { psiSkipped: isLocalhost });
 
     send('complete', { report: reportHtml });
 
