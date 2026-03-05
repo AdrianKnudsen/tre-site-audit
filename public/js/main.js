@@ -234,9 +234,11 @@ function showError(message) {
   document.getElementById("siteFooter").style.display = "";
   document.getElementById("submitBtn").disabled = false;
 
-  // Show error message
+  // Show error message with a discreet report link
   const errorBanner = document.getElementById("errorBanner");
-  errorBanner.textContent = message;
+  const subject = encodeURIComponent("Feilmelding – TRE Nettstedsrevisjon");
+  const body = encodeURIComponent(`Hei,\n\nJeg fikk følgende feilmelding:\n\n${message}\n\nURL: ${document.getElementById("urlInput")?.value || "–"}`);
+  errorBanner.innerHTML = `${message} <a href="mailto:adrian.knudsen@trebergen.no?subject=${subject}&body=${body}" style="display:block;margin-top:0.5rem;font-size:0.8rem;opacity:0.75;color:inherit;">Send feilmelding →</a>`;
   errorBanner.classList.add("visible");
 }
 
