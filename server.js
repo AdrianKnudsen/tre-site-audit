@@ -31,7 +31,7 @@ import { getPageSpeedData } from './lib/pagespeed.js';
 import { fetchPageHtml } from './lib/fetchPage.js';
 import { runPreAudit } from './lib/preAudit.js';
 import { runClaudeAudit } from './lib/claudeAudit.js';
-import { buildReport, LH_TITLES_NO } from './lib/reportBuilder.js';
+import { buildReport, LH_TITLES_NO, LH_DESCRIPTIONS_NO } from './lib/reportBuilder.js';
 import { analyzeSitemap } from './lib/sitemapAnalyzer.js';
 
 // Auto-translate PageSpeed audit IDs that are missing from our Norwegian dictionary
@@ -39,7 +39,7 @@ async function translateMissingAudits(failingAudits, apiKey) {
   const seenIds = new Set();
   const missing = [];
   for (const a of failingAudits) {
-    if (!seenIds.has(a.id) && !LH_TITLES_NO[a.id]) {
+    if (!seenIds.has(a.id) && (!LH_TITLES_NO[a.id] || !LH_DESCRIPTIONS_NO[a.id])) {
       seenIds.add(a.id);
       missing.push({ id: a.id, title: a.title });
     }
